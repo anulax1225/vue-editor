@@ -1,0 +1,29 @@
+# Text Formatting
+npm install @tiptap/extension-text-style
+npm install @tiptap/extension-color
+npm install @tiptap/extension-highlight
+
+# Advanced Formatting
+npm install @tiptap/extension-underline
+npm install @tiptap/extension-subscript
+npm install @tiptap/extension-superscript
+
+# Layout and Structure
+npm install @tiptap/extension-table-column
+npm install @tiptap/extension-table
+npm install @tiptap/extension-table-row
+npm install @tiptap/extension-table-cell
+npm install @tiptap/extension-table-header
+
+# Media and Embeds
+npm install @tiptap/extension-image
+npm install @tiptap/extension-video
+
+# Advanced Features
+npm install @tiptap/extension-bubble-menu
+npm install @tiptap/extension-floating-menu
+npm install @tiptap/extension-placeholder
+npm install @tiptap/extension-typography
+npm install @tiptap/extension-link
+npm install @tiptap/extension-task-list
+npm install @tiptap/extension-task-item
