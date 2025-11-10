@@ -13,11 +13,13 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.16",
+    "@vueuse/core": "^14.0.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "lucide-vue-next": "^0.552.0",
     "prosemirror-commands": "^1.7.1",
     "prosemirror-history": "^1.4.1",
+    "prosemirror-inputrules": "^1.5.1",
     "prosemirror-keymap": "^1.2.3",
     "prosemirror-model": "^1.25.4",
     "prosemirror-schema-basic": "^1.2.4",

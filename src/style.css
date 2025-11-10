@@ -121,10 +121,285 @@
     body {
         @apply bg-background text-foreground;
     }
-
-    [contenteditable]:focus {
-        outline: none;
-    }
 }
 
-@layer utilities {}
+@layer utilities {
+    .md-content {
+        padding: 0.5rem;
+    }
+    
+    .md-content h1 {
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-top: 1.5rem;
+        margin-bottom: 1rem;
+        line-height: 1.3;
+    }
+    
+    .md-content h2 {
+        font-size: 1.2rem;
+        font-weight: 500;
+        margin-top: 1.25rem;
+        margin-bottom: 0.75rem;
+        line-height: 1.3;
+    }
+    
+    .md-content h3 {
+        font-size: 1rem;
+        font-weight: 500;
+        margin-top: 1rem;
+        margin-bottom: 0.5rem;
+        line-height: 1.4;
+    }
+    
+    .md-content h4 {
+        font-size: 1rem;
+        font-weight: 400;
+        margin-top: 0.7rem;
+        margin-bottom: 0.5rem;
+        line-height: 1;
+    }
+    
+    .md-content>p {
+        margin-top: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    /* Lists */
+    .md-content ul,
+    .md-content ol {
+        padding-left: 1.5rem;
+        margin-top: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+    
+    .md-content ol {
+        list-style: decimal;
+    }
+    
+    .md-content ul {
+        list-style: disc;
+    }
+    
+    .md-content ul ul {
+        list-style: circle;
+    }
+    
+    .md-content li {
+        margin-bottom: 0.25rem;
+    }
+    
+    .md-content li>p {
+        margin: 0;
+    }
+    
+    .md-content pre {
+        @apply my-3 bg-gray-800/75 border-gray-600/90 text-gray-100 p-4 rounded border-l-4 whitespace-pre-wrap;
+    }
+    
+    .md-content code {
+        @apply p-[3px] bg-gray-900/75 rounded font-mono;
+    }
+
+    .md-content pre code {
+        @apply p-0 bg-transparent;
+    }
+    
+    /* Code blocks
+      .md-content pre {
+        background-color: rgba(45, 148, 32, 0.788);
+        border-radius: 4px;
+        font-size: 0.875rem;
+        color: rgba(156, 250, 144, 0.788);
+        overflow-x: auto;
+      }
+      
+      .md-content code {
+        border-radius: 3px;
+        padding: 0 0 0 0;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        font-size: 0.875em;
+      } */
+    
+    /* Blockquotes */
+    .md-content blockquote {
+        border-left: 3px solid #ccc;
+        padding-left: 1rem;
+        margin-left: 0;
+        margin-right: 0;
+        font-style: italic;
+        color: white;
+    }
+    
+    .md-content .image-align-left {
+        float: left;
+        margin-right: 1em;
+    }
+    
+    .md-content .image-align-center {
+        display: block;
+        margin: 0 auto;
+    }
+    
+    .md-content .image-align-right {
+        float: right;
+        margin-left: 1em;
+    }
+    
+    .md-content .image-align-justify {
+        width: 100%;
+    }
+    
+    .md-content .mention {
+        background-color: var(--purple-light);
+        border-radius: 0.4rem;
+        box-decoration-break: clone;
+        color: var(--purple);
+        padding: 0.1rem 0.3rem;
+    }
+    
+    /* Links */
+    .md-content a {
+        color: #4dabf7;
+        text-decoration: underline;
+        transition: color 0.2s;
+    }
+    
+    .md-content a:hover {
+        color: #1b91ff;
+    }
+    
+    /* Tables */
+    .md-content table {
+        @apply w-fit overflow-hidden border border-gray-700 my-5;
+    }
+    
+    .md-content table th {
+        @apply bg-gray-900 text-left;
+    }
+    
+    .md-content table th,
+    .md-content table td {
+        @apply px-4 py-2;
+    }
+    
+    .md-content table tr:nth-child(even) {
+        @apply bg-gray-700;
+    }
+    
+    /* Images */
+    .md-content img {
+        max-width: 100%;
+        height: auto;
+        margin: 1rem 0;
+        border-radius: 4px;
+    }
+    
+    /* Horizontal rule */
+    .md-content hr {
+        border: none;
+        border-top: 1px solid #e0e0e0;
+        margin: 1.5rem 0;
+    }
+    
+    /* Text formatting */
+    .md-content strong,
+    .md-content b {
+        font-weight: 700;
+    }
+    
+    .md-content em,
+    .md-content i {
+        font-style: italic;
+    }
+    
+    .md-content u {
+        text-decoration: underline;
+    }
+    
+    .md-content s,
+    .md-content strike,
+    .md-content del {
+        text-decoration: line-through;
+    }
+    
+    /* Placeholders for empty editor */
+    .md-content p.is-editor-empty:first-child::before {
+        content: attr(data-placeholder);
+        float: left;
+        color: #adb5bd;
+        pointer-events: none;
+        height: 0;
+    }
+    
+    /* Task lists */
+    .md-content ul[data-type="taskList"] {
+        list-style: none;
+        padding: 0;
+    }
+    
+    .md-content ul[data-type="taskList"] li {
+        display: flex;
+        align-items: start;
+        margin-bottom: 0.5rem;
+    }
+    
+    .md-content ul[data-type="taskList"] li p {
+        margin: 0;
+    }
+    
+    .md-content ul[data-type="taskList"] li>label {
+        margin-right: 0.5rem;
+        user-select: none;
+    }
+    
+    .md-content ul[data-type="taskList"] li>div {
+        flex: 1;
+    }
+    
+    /* Code highlighting */
+    .md-content .hljs-comment,
+    .md-content .hljs-quote {
+        color: #998;
+        font-style: italic;
+    }
+    
+    .md-content .hljs-keyword,
+    .md-content .hljs-selector-tag,
+    .md-content .hljs-subst {
+        color: #333;
+        font-weight: bold;
+    }
+    
+    .md-content .hljs-string,
+    .md-content .hljs-doctag {
+        color: #d14;
+    }
+    
+    .md-content .hljs-title,
+    .md-content .hljs-section,
+    .md-content .hljs-selector-id {
+        color: #900;
+        font-weight: bold;
+    }
+    
+    .md-content .hljs-number {
+        color: #099;
+    }
+    
+    /* Placeholder text */
+    .md-content .is-empty::before {
+        content: attr(data-placeholder);
+        float: left;
+        color: #adb5bd;
+        pointer-events: none;
+        height: 0;
+    }
+    
+    /* When editor is disabled */
+    .md-content.ProseMirror-disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+}
