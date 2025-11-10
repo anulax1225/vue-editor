@@ -52,14 +52,12 @@ export class Editor {
         const nodes = {}
         const marks = {}
 
-        // Collect nodes from extensions
         this.registry.getNodes().forEach(node => {
             if (node.schema) {
                 nodes[node.name] = node.schema
             }
         })
 
-        // Collect marks from extensions
         this.registry.getMarks().forEach(mark => {
             if (mark.schema) {
                 marks[mark.name] = mark.schema
