@@ -21,14 +21,6 @@ export class Extension {
         return []
     }
 
-    get toolbar() {
-        return null
-    }
-
-    get bubbleMenu() {
-        return null
-    }
-
     get keymap() {
         return {}
     }
@@ -37,7 +29,7 @@ export class Extension {
         return {}
     }
 
-    get inputRules() {
+    inputRules(schema) {
         return []
     }
 

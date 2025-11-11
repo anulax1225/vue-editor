@@ -1,9 +1,9 @@
 import { Node } from '@/editor/node.js'
-import { schema as basicSchema } from 'prosemirror-schema-basic'
+import { schema as markdownSchema } from 'prosemirror-markdown'
 
 export class Doc extends Node {
   get schema() {
-    return basicSchema.spec.nodes.get('doc')
+    return markdownSchema.spec.nodes.get('doc')
   }
 
   get showInMenu() {

@@ -5,7 +5,7 @@ import { Mark } from "./mark.js"
 import extensions from "./extensions/index.js"
 
 export {
-    extensions,
+    extensions as baseExtensions,
     Editor,
     Extension,
     Node,

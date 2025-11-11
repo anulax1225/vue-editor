@@ -7,8 +7,43 @@ import { VueNode } from '@/vue-adapter/node.js'
 import { undo, redo, history } from "prosemirror-history"
 import { keymap } from "prosemirror-keymap"
 import { baseKeymap } from "prosemirror-commands"
+import {defaultMarkdownParser, defaultMarkdownSerializer} from "prosemirror-markdown"
+import { inputRules } from 'prosemirror-inputrules'
 
 export class Editor {
+    static ContentType = Object.freeze({
+        HTML: "html",
+        MARKDOWN: "markdown",
+        JSON: "json",
+        TEXT: "text",
+        parse(type, content, schema) {
+            switch (type) {
+                case "html": 
+                    const parser = new window.DOMParser()
+                    const dom = parser.parseFromString(content, 'text/html')
+                    return DOMParser.fromSchema(schema).parse(dom.body)
+                case "json": return schema.nodeFromJSON(content)
+                case "markdown": return defaultMarkdownParser.parse(content)
+                case "text": return content
+            }
+            return undefined
+        },
+        serialize(type, view) {
+            switch (type) {
+                case "html": 
+                    const div = document.createElement('div')
+                    const fragment = DOMSerializer.fromSchema(view.state.schema)
+                        .serializeFragment(view.state.doc.content)
+                    div.appendChild(fragment)
+                    return div.innerHTML
+                case "json": return view.state.doc.toJSON()
+                case "markdown": return defaultMarkdownSerializer.serialize(view.state.doc)
+                case "text": return view.state.doc.textContent
+            }
+            return undefined
+        }
+    })
+
     constructor({ element, extensions = [], content = '', nodeAdapter = null }) {
         this.registry = new Registry()
         this.element = element
@@ -20,13 +55,8 @@ export class Editor {
     }
 
     init(content) {
-        // Build schema from extensions
         const schema = this.createSchema();
-
-        // Collect plugins from extensions
         const plugins = this.createPlugins(schema)
-
-        // Create editor state
         const state = EditorState.create({
             schema,
             plugins: [
@@ -35,7 +65,7 @@ export class Editor {
                 keymap(baseKeymap),
                 ...plugins,
             ],
-            doc: content ? this.parseContent(content, schema) : undefined,
+            doc: content.value ? Editor.ContentType.parse(content.type, content.value, schema) : undefined,
         })
 
         this.view = new EditorView(this.element, {
@@ -43,9 +73,8 @@ export class Editor {
             dispatchTransaction: this.dispatchTransaction.bind(this),
             nodeViews: this.createNodeViews(),
         })
-
         this.baseSchema = schema;
-        this.registry.getAll().forEach(ext => ext.onCreate(this))
+        this.registry.getAll().forEach(ext => ext.onCreate(this));
     }
 
     createSchema() {
@@ -64,7 +93,6 @@ export class Editor {
             }
         })
 
-        // Ensure required base nodes
         if (!nodes.doc) {
             nodes.doc = { content: 'block+' }
         }
@@ -77,25 +105,24 @@ export class Editor {
 
     createPlugins(schema) {
         const plugins = []
-
-        // Collect plugins from extensions
+        const rules = [];
         this.registry.getSorted().forEach(ext => {
             if (ext.plugins) {
                 plugins.push(...ext.plugins)
             }
-
-            // Add keymap if defined
             if (ext.keymap && Object.keys(ext.keymap).length > 0) {
                 plugins.push(keymap(ext.keymap))
             }
+            rules.concat(ext.inputRules(schema));
         })
-
+        // if (rules && rules.length > 0) {
+        //     plugins.push(inputRules({ rules }))
+        // } 
         return plugins
     }
 
     createNodeViews() {
         const nodeViews = {}
-
         this.registry.getNodes().forEach(node => {
             if (node.component) {
                 nodeViews[node.name] = (pmNode, view, getPos) => {
@@ -109,12 +136,10 @@ export class Editor {
 
     parseContent(content, schema) {
         if (typeof content === 'string') {
-            // Parse HTML string
             const parser = new window.DOMParser()
             const dom = parser.parseFromString(content, 'text/html')
             return DOMParser.fromSchema(schema).parse(dom.body)
         } else if (content && typeof content === 'object') {
-            // Parse JSON
             return schema.nodeFromJSON(content)
         }
         return undefined
@@ -130,7 +155,6 @@ export class Editor {
         this.emit('transaction', { editor: this, transaction })
     }
 
-    // Event system
     on(event, callback) {
         if (!this.listeners.has(event)) {
             this.listeners.set(event, [])
@@ -139,62 +163,30 @@ export class Editor {
         return this
     }
 
-    off(event, callback) {
-        if (!this.listeners.has(event)) return this
-
-        if (callback) {
-            const callbacks = this.listeners.get(event)
-            const index = callbacks.indexOf(callback)
-            if (index > -1) {
-                callbacks.splice(index, 1)
-            }
-        } else {
-            this.listeners.delete(event)
-        }
-        return this
-    }
-
     emit(event, data) {
         this.listeners.get(event)?.forEach(callback => callback(data))
         return this
     }
 
-    // Commands
     chain() {
         return new CommandChain(this)
     }
 
-    // Content getters
-    getHTML() {
-        const div = document.createElement('div')
-        const fragment = DOMSerializer.fromSchema(this.view.state.schema)
-            .serializeFragment(this.view.state.doc.content)
-        div.appendChild(fragment)
-        return div.innerHTML
+    getContent(type) {
+        return Editor.ContentType.serialize(type, this.view);
     }
 
-    getJSON() {
-        return this.view.state.doc.toJSON()
-    }
-
-    getText() {
-        return this.view.state.doc.textContent
-    }
-
-    // Content setters
     setContent(content) {
         const { doc, tr } = this.view.state
-        const newDoc = this.parseContent(content, this.view.state.schema)
-
+        const newDoc = Editor.ContentType.parse(content.type, content.value, schema)
         if (newDoc) {
             const transaction = tr.replaceWith(0, doc.content.size, newDoc.content)
             this.view.dispatch(transaction)
         }
-
         return this;
     }
 
-    // Get menu items for toolbar
+
     getMenuItems() {
         return this.registry.getMenuItems()
     }
@@ -203,16 +195,14 @@ export class Editor {
         return this.registry.getBubbleMenuItems()
     }
 
-    // State helpers
     get state() {
         return this.view.state
     }
 
     get schema() {
-        return this.baseSchema
+        return this.view.state.schema;
     }
 
-    // Focus management
     focus(position) {
         if (position === 'end') {
             const { doc } = this.view.state
@@ -241,7 +231,6 @@ export class Editor {
         return this
     }
 
-    // Destroy
     destroy() {
         this.registry.getAll().forEach(ext => ext.onDestroy?.())
         this.view?.destroy()
@@ -253,16 +242,11 @@ class CommandChain {
     constructor(editor) {
         this.editor = editor
         this.commands = []
-
-        // Return a Proxy to intercept method calls
         return new Proxy(this, {
             get(target, prop) {
-                // If the property exists on the target, return it
                 if (prop in target) {
                     return target[prop]
                 }
-
-                // Otherwise, try to find a command in extensions
                 return (...args) => {
                     const extensions = target.editor.registry.getAll()
 
@@ -270,10 +254,9 @@ class CommandChain {
                         if (ext.commands && ext.commands[prop]) {
                             console.log("found " + prop + " in " + ext.name)
                             target.commands.push(ext.commands[prop](...args))
-                            return target // Return the proxy for chaining
+                            return target;
                         }
                     }
-
                     console.warn(`Command "${prop}" not found`)
                     return target
                 }
@@ -282,23 +265,19 @@ class CommandChain {
     }
 
     run() {
-        const { state, dispatch } = this.editor.view
-        let success = true
-
+        const view = this.editor.view;
+        let success = true;
         for (const command of this.commands) {
-            console.log("command")
-            if (!command(state, dispatch, this.editor.view)) {
-                success = false
-                break
+            if (!command(view.state, view.dispatch.bind(view), view)) {
+                success = false;
+                break;
             }
         }
-
-        this.commands = [] // Clear commands after running
-        console.log("run", success)
-        return success
+        console.log(`ran with success(${success})`)
+        this.commands = [];
+        return success;
     }
 
-    // Add a custom command function directly
     command(fn) {
         this.commands.push(fn)
         return this

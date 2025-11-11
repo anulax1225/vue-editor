@@ -8,19 +8,20 @@
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue';
+import { onMounted, ref, provide, shallowRef, onUnmounted  } from 'vue';
 import Toolbar from './EditorToolbar.vue';
 
-import { Editor, extensions } from "@/editor";
+import { Editor } from "@/editor";
 
 const props = defineProps({
     content: {
         type: String,
         default: `
-            <h1>Titre 1</h1>
-            <h2>Titre 2</h2>
-            <h3>Titre 3</h3>
-            <p>text</p>
+# Titre 1
+## Titre 2
+### Titre 3
+
+texte 
         `,
     },
     extensions: {
@@ -32,22 +33,30 @@ const props = defineProps({
 const toolbar = ref(null);
 const emit = defineEmits(['update'])
 const element = ref(null);
-const editor = ref(null);
+const editor = shallowRef(null);
+
+provide('editor', editor);
 
 onMounted(() => {
     editor.value = new Editor({
         element: element.value,
-        extensions: [...extensions, ...props.extensions],
-        content: props.content,
-    }); 
+        extensions: [...props.extensions],
+        content: {
+            type: Editor.ContentType.MARKDOWN,
+            value: props.content,
+        }
+    });
     editor.value.on("update", ({ editor }) => {
-        //console.log(editor.getHTML())
+        
     })
 
     editor.value.on("transaction", ({ editor }) => {
-        //console.log("event transaction");
         toolbar.value.forceRerender();
     })
+})
+
+onUnmounted(() => {
+    editor.value.destroy();
 })
 </script>
 

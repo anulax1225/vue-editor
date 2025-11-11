@@ -22,4 +22,9 @@ export class Mark extends Extension {
             isDisabled: () => false,
         }
     }
+
+    isActive() {
+        const { $from } = this.editor.state.selection
+        return $from.parent.type.name === this.name
+    }
 }
