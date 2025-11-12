@@ -3,11 +3,12 @@ import { EditorState } from 'prosemirror-state'
 import { EditorView } from 'prosemirror-view'
 import { Schema, DOMParser, DOMSerializer } from 'prosemirror-model'
 import { Registry } from './registry.js'
-import { VueNode } from '@/vue-adapter/node.js'
 import { undo, redo, history } from "prosemirror-history"
 import { keymap } from "prosemirror-keymap"
 import { baseKeymap } from "prosemirror-commands"
-import {defaultMarkdownParser, defaultMarkdownSerializer} from "prosemirror-markdown"
+import { dropCursor } from "prosemirror-dropcursor"
+import { gapCursor } from "prosemirror-gapcursor"
+import { defaultMarkdownParser, defaultMarkdownSerializer } from "prosemirror-markdown"
 import { inputRules, smartQuotes, emDash, ellipsis } from 'prosemirror-inputrules'
 
 export class Editor {
@@ -44,11 +45,12 @@ export class Editor {
         }
     })
 
-    constructor({ element, extensions = [], content = '', nodeAdapter = null }) {
-        this.registry = new Registry()
-        this.element = element
-        this.view = null
-        this.listeners = new Map()
+    constructor({ element, extensions = [], content = '', nodeAdapter = null, editable = true }) {
+        this.registry = new Registry();
+        this.element = element;
+        this.view = null;
+        this.editable = editable;
+        this.listeners = new Map();
         this.nodeAdapter = nodeAdapter;
         this.registry.registerMultiple(extensions)
         this.init(content)
@@ -56,20 +58,22 @@ export class Editor {
 
     init(content) {
         const schema = this.createSchema();
-        const plugins = this.createPlugins(schema)
+        const plugins = this.createPlugins(schema);
         const state = EditorState.create({
             schema,
             plugins: [
                 ...plugins,
+                dropCursor(),
+                gapCursor(),
                 history(),
             ],
             doc: content.value ? Editor.ContentType.parse(content.type, content.value, schema) : undefined,
         })
-
         this.view = new EditorView(this.element, {
             state,
             dispatchTransaction: this.dispatchTransaction.bind(this),
             nodeViews: this.createNodeViews(),
+            editable: () => this.isEditable,
         })
         this.baseSchema = schema;
         this.registry.getAll().forEach(ext => ext.onCreate(this));
@@ -99,6 +103,14 @@ export class Editor {
         }
 
         return new Schema({ nodes, marks })
+    }
+
+    setEditable(flag) {
+        this.editable = flag;
+    }
+
+    get isEditable() {
+        return this.editable
     }
 
     createPlugins(schema) {
@@ -138,7 +150,7 @@ export class Editor {
         this.registry.getNodes().forEach(node => {
             if (node.component) {
                 nodeViews[node.name] = (pmNode, view, getPos) => {
-                    return new VueNode(node.component, pmNode, view, getPos)
+                    return new this.nodeAdapter(node.component, pmNode, view, getPos)
                 }
             }
         })
@@ -264,7 +276,6 @@ class CommandChain {
 
                     for (const ext of extensions) {
                         if (ext.commands && ext.commands[prop]) {
-                            console.log("found " + prop + " in " + ext.name)
                             target.commands.push(ext.commands[prop](...args))
                             return target;
                         }
@@ -285,8 +296,8 @@ class CommandChain {
                 break;
             }
         }
-        console.log(`ran with success(${success})`)
         this.commands = [];
+        console.log("command", success);
         return success;
     }
 

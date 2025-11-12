@@ -50,6 +50,7 @@ export class Registry {
         this.getAll()
             .filter(ext => ext.showInMenu && ext.menuItem)
             .map(ext => items.push(...ext.menuItem))
+        items.forEach(item => item.isActive = item.isActive ? item.isActive : () => false);
         return items;
     }
 

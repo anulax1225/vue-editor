@@ -24,7 +24,14 @@ export class Mark extends Extension {
     }
 
     isActive() {
-        const { $from } = this.editor.state.selection
-        return $from.parent.type.name === this.name
+        const { from, to, empty } = this.editor.state.selection
+        const mark = this.editor.schema.marks[this.name]
+        if (empty) {
+            return !!mark.isInSet(
+                this.editor.state.storedMarks ||
+                this.editor.state.selection.$from.marks()
+            )
+        }
+        return this.editor.state.doc.rangeHasMark(from, to, mark)
     }
 }
