@@ -18,6 +18,8 @@
     "clsx": "^2.1.1",
     "lucide-vue-next": "^0.552.0",
     "prosemirror-commands": "^1.7.1",
+    "prosemirror-dropcursor": "^1.8.2",
+    "prosemirror-gapcursor": "^1.4.0",
     "prosemirror-history": "^1.4.1",
     "prosemirror-inputrules": "^1.5.1",
     "prosemirror-keymap": "^1.2.3",

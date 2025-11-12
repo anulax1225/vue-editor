@@ -1,29 +1,40 @@
 <template>
-    <Toolbar ref="toolbar" class="mb-3" v-if="editor" />
+    <component v-if="editor && editor.isEditable" :is="props.toolbar" ref="toolbar" class="mb-3"/>
     <div class="border border-gray-300 rounded min-h-96">
         <div ref="element" class="h-full w-full md-content"></div>
 
-        <!-- <BubbleMenu v-if="editor" :editor="editor" :items="bubbleMenuItems" /> -->
     </div>
 </template>
 
 <script setup>
-import { onMounted, ref, provide, shallowRef, onUnmounted  } from 'vue';
-import Toolbar from './EditorToolbar.vue';
+import { onMounted, ref, provide, shallowRef, onUnmounted } from 'vue';
+import FlatToolbar from './toolbars/FlatToolbar.vue';
 
 import { Editor } from "@/editor";
+import { VueNodeAdapter } from '@/vue-adapter';
 
 const props = defineProps({
+    toolbar: {
+        type: Object,
+        default: null
+    },
     content: {
-        type: String,
-        default: `
+        type: Object,
+        default: {
+            type: Editor.ContentType.MARKDOWN,
+            value: `
 # Titre 1
 ## Titre 2
 ### Titre 3
+
+> # ouii
+> nonn
+
 \`\`\`
 texte
 \`\`\` 
-        `,
+            `,
+        },
     },
     extensions: {
         type: Array,
@@ -32,7 +43,7 @@ texte
 });
 
 const toolbar = ref(null);
-const emit = defineEmits(['update'])
+const emit = defineEmits(['init', 'update'])
 const element = ref(null);
 const editor = shallowRef(null);
 
@@ -42,18 +53,15 @@ onMounted(() => {
     editor.value = new Editor({
         element: element.value,
         extensions: [...props.extensions],
-        content: {
-            type: Editor.ContentType.MARKDOWN,
-            value: props.content,
-        }
+        content: props.content,
+        nodeAdapter: VueNodeAdapter,
+        editable: false,
     });
-    editor.value.on("update", ({ editor }) => {
-        console.log(editor.getContent(Editor.ContentType.JSON));
-    })
-
+    editor.value.on("update", e => emit("update", e))
     editor.value.on("transaction", ({ editor }) => {
-        toolbar.value.forceRerender();
-    })
+        if (props.toolbar && editor.isEditable) toolbar.value.forceRerender();
+    });
+    emit("init", editor)
 })
 
 onUnmounted(() => {
@@ -62,7 +70,7 @@ onUnmounted(() => {
 </script>
 
 <style>
-    [contenteditable]:focus {
-        outline: none;
-    }
+[contenteditable]:focus {
+    outline: none;
+}
 </style>
