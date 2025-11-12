@@ -1,6 +1,7 @@
 import { Node } from '@/editor/node.js'
 import { schema as markdownSchema } from 'prosemirror-markdown'
 import { setBlockType } from 'prosemirror-commands'
+import { createAtomCommand } from '@/editor/utils.js'
 
 export class Image extends Node {
     get schema() {
@@ -20,7 +21,7 @@ export class Image extends Node {
 
     get commands() {
         return {
-            setImage: () => this.blockCommand({ src: "", alt: "", title: "" }),
+            setImage: () => createAtomCommand(this.name, { src: "https://lipsum.app/random/600x200", alt: "", title: "" }),
         };
     }
 }

@@ -1,6 +1,6 @@
 import { Node } from '@/editor/node.js'
 import { schema as markdownSchema } from 'prosemirror-markdown'
-import { createBlockCommand, markdownInputRule } from '../utils';
+import { createBlockCommand, markdownNodeInputRule } from '@/editor/utils.js';
 
 export class CodeBlock extends Node {
     get name() {
@@ -36,7 +36,7 @@ export class CodeBlock extends Node {
 
     inputRules(schema)  {
         return [
-            markdownInputRule(/^```\s$/, this.name),
+            markdownNodeInputRule(/^```\s$/, this.name),
         ]
     }
 }

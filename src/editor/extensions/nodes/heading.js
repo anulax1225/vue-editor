@@ -1,10 +1,24 @@
 import { Node } from '@/editor/node.js'
 import { schema as markdownSchema } from 'prosemirror-markdown'
-import { createBlockCommand, markdownInputRule } from '../utils'
+import { createBlockCommand, markdownNodeInputRule } from '@/editor/utils.js'
 
 export class Heading extends Node {
     get schema() {
-        return markdownSchema.spec.nodes.get('heading')
+        return {
+            attrs: { level: { default: 1 } },
+            content: "(text)*",
+            group: "block",
+            defining: true,
+            parseDOM: [
+                { tag: "h1", attrs: { level: 1 } },
+                { tag: "h2", attrs: { level: 2 } },
+                { tag: "h3", attrs: { level: 3 } },
+                { tag: "h4", attrs: { level: 4 } },
+                { tag: "h5", attrs: { level: 5 } },
+                { tag: "h6", attrs: { level: 6 } }
+            ],
+            toDOM(node) { return ["h" + node.attrs.level, 0] }
+        }
     }
 
     get menuItem() {
@@ -21,7 +35,7 @@ export class Heading extends Node {
         }))
     }
 
-    
+
     get commands() {
         return {
             setHeading: (level) => createBlockCommand(this.name, { level }),
@@ -39,7 +53,7 @@ export class Heading extends Node {
     inputRules(schema) {
         const maxLevel = 3;
         return [
-            markdownInputRule(new RegExp("^(#{1," + maxLevel + "})\\s$"), this.name, match => ({ level: match[1].length })),
+            markdownNodeInputRule(new RegExp("^(#{1," + maxLevel + "})\\s$"), this.name, match => ({ level: match[1].length })),
         ]
     }
 }
