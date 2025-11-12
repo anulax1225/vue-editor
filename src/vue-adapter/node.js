@@ -1,101 +1,126 @@
-import { createApp } from 'vue'
+import { createApp, reactive, markRaw } from 'vue'
 
-export class VueNode {
-    constructor(component, node, view, getPos) {
-        this.component = component
-        this.node = node
-        this.view = view
-        this.getPos = getPos
-        this.app = null
-        this.vueInstance = null
+export class VueNodeAdapter {
+  constructor(component, node, view, getPos) {
+    this.component = component
+    this.node = node
+    this.view = markRaw(view) // Prevent Vue from making view reactive
+    this.getPos = getPos
+    this.app = null
+    this.vueInstance = null
+    
+    // Generate a unique ID for this node view instance
+    this.instanceId = Math.random().toString(36).substr(2, 9)
 
-        // Create a DOM element
-        this.dom = document.createElement('div')
-        this.dom.classList.add('vue-node-view')
+    // Create a unique DOM element for this instance
+    this.dom = document.createElement('div')
+    this.dom.classList.add('vue-node-view')
+    this.dom.dataset.instanceId = this.instanceId
 
-        // Create Vue app
-        this.app = createApp(component, {
-            node: this.node,
-            view: this.view,
-            getPos: this.getPos,
-            updateAttrs: this.updateAttrs.bind(this),
-        })
-
-        // Mount the Vue component
-        this.vueInstance = this.app.mount(this.dom)
-
-        // Check if the component exposes a contentDOM element
-        // This is where ProseMirror will render nested content
-        if (this.vueInstance.contentDOM) {
-            this.contentDOM = this.vueInstance.contentDOM
-        }
+    // Create a deep copy of node attributes to ensure isolation
+    const nodeData = {
+      attrs: { ...node.attrs },
+      type: node.type,
     }
 
-    updateAttrs(attrs) {
-        if (typeof this.getPos === 'function') {
-            const pos = this.getPos()
-            if (pos === undefined) return
+    // Create reactive props that are unique to this instance
+    const reactiveProps = reactive({
+      node: nodeData,
+      view: this.view,
+      getPos: this.getPos,
+      updateAttrs: this.updateAttrs.bind(this),
+    })
 
-            const transaction = this.view.state.tr.setNodeMarkup(pos, null, {
-                ...this.node.attrs,
-                ...attrs,
-            })
-            this.view.dispatch(transaction)
-        }
+    // Create a completely isolated Vue app instance
+    this.app = createApp(component, reactiveProps)
+    
+    // Store the reactive props so we can update them
+    this.reactiveProps = reactiveProps
+
+    // Mount to this specific DOM element
+    this.vueInstance = this.app.mount(this.dom)
+
+    // Check if the component exposes a contentDOM element
+    if (this.vueInstance.contentDOM) {
+      this.contentDOM = this.vueInstance.contentDOM
     }
+  }
 
-    update(node) {
-        if (node.type !== this.node.type) {
-            return false
-        }
-
-        this.node = node
-
-        // Update the Vue component props
-        if (this.vueInstance && this.vueInstance.$props) {
-            this.vueInstance.$props.node = node
-        }
-
-        return true
+  updateAttrs(attrs) {
+    if (typeof this.getPos === 'function') {
+      const pos = this.getPos()
+      if (pos === undefined) return
+      
+      const transaction = this.view.state.tr.setNodeMarkup(pos, null, {
+        ...this.node.attrs,
+        ...attrs,
+      })
+      this.view.dispatch(transaction)
     }
+  }
 
-    destroy() {
-        if (this.app) {
-            this.app.unmount()
-        }
+  update(node) {
+    // Only update if it's the same node type
+    if (node.type !== this.node.type) {
+      return false
     }
+    
+    // Update the stored node reference
+    this.node = node
+    
+    // Create a deep copy of the new attributes
+    const newNodeData = {
+      attrs: { ...node.attrs },
+      type: node.type,
+    }
+    
+    // Update the reactive props with new data
+    // This ensures Vue sees the change
+    if (this.reactiveProps) {
+      Object.assign(this.reactiveProps.node.attrs, newNodeData.attrs)
+    }
+    
+    return true
+  }
 
-    // Prevent ProseMirror from handling events inside Vue components
-    stopEvent(event) {
-        // Allow events on inputs, selects, and buttons
-        const target = event.target
-        if (
-            target.tagName === 'INPUT' ||
-            target.tagName === 'SELECT' ||
-            target.tagName === 'BUTTON' ||
-            target.tagName === 'TEXTAREA'
-        ) {
-            return true
-        }
-        return false
+  destroy() {
+    if (this.app) {
+      try {
+        this.app.unmount()
+      } catch (e) {
+        console.warn('Error unmounting Vue app:', e)
+      }
+      this.app = null
+      this.vueInstance = null
+      this.reactiveProps = null
     }
+  }
 
-    // Ignore mutations to the Vue-controlled parts
-    ignoreMutation(mutation) {
-        // If there's a contentDOM, don't ignore mutations inside it
-        if (this.contentDOM && this.contentDOM.contains(mutation.target)) {
-            return false
-        }
-        // Ignore all other mutations (Vue handles its own DOM)
-        return true
+  stopEvent(event) {
+    const target = event.target
+    if (
+      target.tagName === 'INPUT' ||
+      target.tagName === 'SELECT' ||
+      target.tagName === 'BUTTON' ||
+      target.tagName === 'TEXTAREA'
+    ) {
+      return true
     }
+    return false
+  }
 
-    // Make the node selectable
-    selectNode() {
-        this.dom.classList.add('ProseMirror-selectednode')
+  ignoreMutation(mutation) {
+    if (this.contentDOM && this.contentDOM.contains(mutation.target)) {
+      return false
     }
+    return true
+  }
 
-    deselectNode() {
-        this.dom.classList.remove('ProseMirror-selectednode')
-    }
+  selectNode() {
+    this.dom.classList.add('ProseMirror-selectednode')
+  }
+
+  deselectNode() {
+    this.dom.classList.remove('ProseMirror-selectednode')
+  }
 }
