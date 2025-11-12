@@ -2,7 +2,11 @@ export class Extension {
     constructor(options = {}) {
         this.options = options;
         this.editor = null;
-        this.name = this.constructor.name.toLowerCase();
+        this.extensionName = this.constructor.name.toLowerCase();
+    }
+
+    get name() {
+        return this.extensionName;
     }
 
     get type() {

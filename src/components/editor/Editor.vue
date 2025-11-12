@@ -1,5 +1,5 @@
 <template>
-    <Toolbar ref="toolbar" class="mb-3" v-if="editor" :editor="editor" />
+    <Toolbar ref="toolbar" class="mb-3" v-if="editor" />
     <div class="border border-gray-300 rounded min-h-96">
         <div ref="element" class="h-full w-full md-content"></div>
 
@@ -20,8 +20,9 @@ const props = defineProps({
 # Titre 1
 ## Titre 2
 ### Titre 3
-
-texte 
+\`\`\`
+texte
+\`\`\` 
         `,
     },
     extensions: {
@@ -47,7 +48,7 @@ onMounted(() => {
         }
     });
     editor.value.on("update", ({ editor }) => {
-        
+        console.log(editor.getContent(Editor.ContentType.JSON));
     })
 
     editor.value.on("transaction", ({ editor }) => {

@@ -8,7 +8,7 @@ import { undo, redo, history } from "prosemirror-history"
 import { keymap } from "prosemirror-keymap"
 import { baseKeymap } from "prosemirror-commands"
 import {defaultMarkdownParser, defaultMarkdownSerializer} from "prosemirror-markdown"
-import { inputRules } from 'prosemirror-inputrules'
+import { inputRules, smartQuotes, emDash, ellipsis } from 'prosemirror-inputrules'
 
 export class Editor {
     static ContentType = Object.freeze({
@@ -60,10 +60,8 @@ export class Editor {
         const state = EditorState.create({
             schema,
             plugins: [
-                history(),
-                keymap({ "Mod-z": undo, "Mod-y": redo }),
-                keymap(baseKeymap),
                 ...plugins,
+                history(),
             ],
             doc: content.value ? Editor.ContentType.parse(content.type, content.value, schema) : undefined,
         })
@@ -104,20 +102,34 @@ export class Editor {
     }
 
     createPlugins(schema) {
+        const rules = smartQuotes.concat(ellipsis, emDash);
+        const keymaps = {
+            "Mod-z": undo, 
+            "Mod-y": redo,
+            ...baseKeymap
+        };
+        this.registry.getSorted().forEach(ext => {
+            const extRules = ext.inputRules(schema);
+            if (!Array.isArray(extRules)) rules.push(extRules);
+            else rules.push(...extRules);
+
+            if (ext.keymap && Object.keys(ext.keymap).length > 0) {
+                Object.assign(keymaps, ext.keymap)
+            }
+        })
+
         const plugins = []
-        const rules = [];
+        if (rules.length > 0) {
+            plugins.push(inputRules({ rules }))
+        } 
+        if (Object.keys(keymaps).length > 0) {
+            plugins.push(keymap(keymaps))
+        }
         this.registry.getSorted().forEach(ext => {
             if (ext.plugins) {
                 plugins.push(...ext.plugins)
             }
-            if (ext.keymap && Object.keys(ext.keymap).length > 0) {
-                plugins.push(keymap(ext.keymap))
-            }
-            rules.concat(ext.inputRules(schema));
         })
-        // if (rules && rules.length > 0) {
-        //     plugins.push(inputRules({ rules }))
-        // } 
         return plugins
     }
 

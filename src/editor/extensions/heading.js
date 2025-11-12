@@ -1,6 +1,6 @@
 import { Node } from '@/editor/node.js'
 import { schema as markdownSchema } from 'prosemirror-markdown'
-import { textblockTypeInputRule } from 'prosemirror-inputrules'
+import { createBlockCommand, markdownInputRule } from '../utils'
 
 export class Heading extends Node {
     get schema() {
@@ -24,7 +24,7 @@ export class Heading extends Node {
     
     get commands() {
         return {
-            setHeading: (level) => this.blockCommand({ level }),
+            setHeading: (level) => createBlockCommand(this.name, { level }),
         };
     }
 
@@ -37,12 +37,9 @@ export class Heading extends Node {
     }
 
     inputRules(schema) {
-        return [1, 2, 3, 4, 5, 6].map(level =>
-            textblockTypeInputRule(
-                new RegExp(`^(#{${level}})\\s$`),
-                schema.nodes[this.name],
-                { level }
-            )
-        )
+        const maxLevel = 3;
+        return [
+            markdownInputRule(new RegExp("^(#{1," + maxLevel + "})\\s$"), this.name, match => ({ level: match[1].length })),
+        ]
     }
 }

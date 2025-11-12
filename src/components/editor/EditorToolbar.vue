@@ -8,7 +8,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, inject } from 'vue'
+import { computed, inject } from 'vue'
 import { Badge } from '@/components/ui/badge'
 import { getCurrentInstance } from 'vue'
 
