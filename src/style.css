@@ -124,18 +124,19 @@
 }
 
 @layer utilities {
-    .ProseMirror {
-        position: relative;
-    }
 
+    /* ========================================
+       PROSEMIRROR BASE STYLES
+       ======================================== */
     .ProseMirror {
+        @apply min-h-96;
+        position: relative;
         word-wrap: break-word;
         white-space: pre-wrap;
         white-space: break-spaces;
         -webkit-font-variant-ligatures: none;
         font-variant-ligatures: none;
         font-feature-settings: "liga" 0;
-        /* the above doesn't seem to work in Edge */
     }
 
     .ProseMirror pre {
@@ -146,6 +147,7 @@
         position: relative;
     }
 
+    /* Selection hiding */
     .ProseMirror-hideselection *::selection {
         background: transparent;
     }
@@ -158,17 +160,17 @@
         caret-color: transparent;
     }
 
-    /* See https://github.com/ProseMirror/prosemirror/issues/1421#issuecomment-1759320191 */
+    /* Draggable elements */
     .ProseMirror [draggable][contenteditable=false] {
-        user-select: text
+        user-select: text;
     }
 
+    /* Selected node - updated to match style guide blue accent */
     .ProseMirror-selectednode {
-        outline: 2px solid #8cf;
+        @apply outline outline-2 outline-blue-600 rounded;
     }
 
-    /* Make sure li selections wrap around markers */
-
+    /* List item selection wrapper */
     li.ProseMirror-selectednode {
         outline: none;
     }
@@ -180,276 +182,397 @@
         right: -2px;
         top: -2px;
         bottom: -2px;
-        border: 2px solid #8cf;
-        pointer-events: none;
+        @apply border-2 border-blue-600 rounded pointer-events-none;
     }
 
     /* Protect against generic img rules */
-
     img.ProseMirror-separator {
         display: inline !important;
         border: none !important;
         margin: 0 !important;
     }
 
-    .md-content {
-        padding: 0.5rem;
-    }
-
-    .md-content h1 {
-        font-size: 1.3rem;
-        font-weight: 700;
+    /* Headings - following style guide typography */
+    .ProseMirror h1 {
+        @apply text-3xl font-bold text-white;
         margin-top: 1.5rem;
         margin-bottom: 1rem;
-        line-height: 1.3;
     }
 
-    .md-content h2 {
-        font-size: 1.2rem;
-        font-weight: 500;
+    .ProseMirror h2 {
+        @apply text-xl font-bold text-white;
         margin-top: 1.25rem;
         margin-bottom: 0.75rem;
         line-height: 1.3;
     }
 
-    .md-content h3 {
-        font-size: 1rem;
-        font-weight: 500;
+    .ProseMirror h3 {
+        @apply text-lg font-medium text-white;
         margin-top: 1rem;
         margin-bottom: 0.5rem;
         line-height: 1.4;
     }
 
-    .md-content h4 {
-        font-size: 1rem;
-        font-weight: 400;
+    .ProseMirror h4 {
+        @apply text-lg font-medium text-gray-200;
         margin-top: 0.7rem;
         margin-bottom: 0.5rem;
-        line-height: 1;
+        line-height: 1.4;
     }
 
-    .md-content>p {
+    /* Paragraphs */
+    .ProseMirror>p {
+        @apply text-gray-200;
         margin-top: 0.75rem;
         margin-bottom: 0.75rem;
     }
 
-    /* Lists */
-    .md-content ul,
-    .md-content ol {
+    /* ========================================
+       LISTS
+       ======================================== */
+    .ProseMirror ul,
+    .ProseMirror ol {
+        @apply text-gray-200;
         padding-left: 1.5rem;
         margin-top: 0.75rem;
         margin-bottom: 0.75rem;
     }
 
-    .md-content ol {
+    .ProseMirror ol {
         list-style: decimal;
     }
 
-    .md-content ul {
+    .ProseMirror ul {
         list-style: disc;
     }
 
-    .md-content ul ul {
+    .ProseMirror ul ul {
         list-style: circle;
     }
 
-    .md-content li {
+    .ProseMirror li {
         margin-bottom: 0.25rem;
     }
 
-    .md-content li>p {
+    .ProseMirror li>p {
         margin: 0;
     }
 
-    .md-content pre {
-        @apply w-fit my-3 bg-gray-300/75 border-gray-400/90 text-gray-900 px-4 py-1 rounded border-l-4 whitespace-pre-wrap;
+    /* ========================================
+       CODE BLOCKS
+       ======================================== */
+    .ProseMirror pre {
+        @apply w-fit my-3 bg-gray-800 border-l-4 border-blue-600 text-gray-200 px-4 py-3 rounded shadow-sm whitespace-pre-wrap transition duration-500 hover:shadow-md;
     }
 
-    .md-content code {
-        @apply p-[3px] bg-gray-900/75 rounded font-mono;
+    .ProseMirror code {
+        @apply px-2 py-1 bg-gray-700 text-gray-200 rounded font-mono text-sm;
     }
 
-    .md-content pre code {
-        @apply p-0 bg-transparent;
+    .ProseMirror pre code {
+        @apply p-0 bg-transparent text-gray-200;
     }
 
-    .md-content blockquote {
-        border-left: 3px solid #ccc;
-        padding-left: 0.5rem;
+    /* ========================================
+       BLOCKQUOTES
+       ======================================== */
+    .ProseMirror blockquote {
+        @apply w-fit border-l-4 border-gray-600 bg-gray-800/50 text-gray-300 italic rounded-r pl-4 pr-3 py-2 my-3;
         margin-left: 0;
         margin-right: 0;
-        font-style: italic;
     }
 
-    .md-content .image-align-left {
+    /* ========================================
+       IMAGES
+       ======================================== */
+    .ProseMirror img {
+        @apply rounded shadow-sm;
+        max-width: 100%;
+        height: auto;
+        margin: 1rem 0;
+    }
+
+    .ProseMirror .image-align-left {
         float: left;
         margin-right: 1em;
     }
 
-    .md-content .image-align-center {
+    .ProseMirror .image-align-center {
         display: block;
         margin: 0 auto;
     }
 
-    .md-content .image-align-right {
+    .ProseMirror .image-align-right {
         float: right;
         margin-left: 1em;
     }
 
-    .md-content .image-align-justify {
+    .ProseMirror .image-align-justify {
         width: 100%;
     }
 
-    .md-content .mention {
-        background-color: var(--purple-light);
-        border-radius: 0.4rem;
+    /* ========================================
+       MENTIONS
+       ======================================== */
+    .ProseMirror .mention {
+        @apply bg-blue-600/20 text-blue-400 rounded px-2 py-1 font-medium transition duration-500 hover:bg-blue-600/30;
         box-decoration-break: clone;
-        color: var(--purple);
-        padding: 0.1rem 0.3rem;
     }
 
-    /* Links */
-    .md-content a {
-        color: #4dabf7;
-        text-decoration: underline;
-        transition: color 0.2s;
+    /* ========================================
+       LINKS
+       ======================================== */
+    .ProseMirror a {
+        @apply text-blue-400 underline transition duration-500 hover:text-blue-300;
     }
 
-    .md-content a:hover {
-        color: #1b91ff;
+    /* ========================================
+       TABLES
+       ======================================== */
+    /* Base table styles - your existing styles */
+    .ProseMirror table {
+        @apply w-fit overflow-hidden border border-gray-700 my-5 rounded shadow-sm;
     }
 
-    /* Tables */
-    .md-content table {
-        @apply w-fit overflow-hidden border border-gray-700 my-5;
+    .ProseMirror table th {
+        @apply bg-gray-800 text-white text-left font-medium px-4 py-2;
     }
 
-    .md-content table th {
-        @apply bg-gray-900 text-left;
+    .ProseMirror table td {
+        @apply px-4 py-2 text-gray-200 border-t border-gray-700;
     }
 
-    .md-content table th,
-    .md-content table td {
-        @apply px-4 py-2;
+    .ProseMirror table tr:nth-child(even) {
+        @apply bg-gray-800/50;
     }
 
-    .md-content table tr:nth-child(even) {
-        @apply bg-gray-700;
+    .ProseMirror table tr {
+        @apply transition duration-500 hover:bg-gray-700/50;
     }
 
-    /* Images */
-    .md-content img {
-        max-width: 100%;
-        height: auto;
-        margin: 1rem 0;
-        border-radius: 4px;
+    .ProseMirror table tr td {
+        @apply border-r;
     }
 
-    /* Horizontal rule */
-    .md-content hr {
-        border: none;
-        border-top: 1px solid #e0e0e0;
-        margin: 1.5rem 0;
+    .ProseMirror table tr td:last-child {
+        @apply border-r-0;
     }
 
-    /* Text formatting */
-    .md-content strong,
-    .md-content b {
-        font-weight: 700;
+    /* Selected cell highlighting - adapts to your dark theme */
+    .ProseMirror table td.selectedCell,
+    .ProseMirror table th.selectedCell {
+        @apply bg-blue-500/40 outline outline-2 outline-blue-400 -outline-offset-1;
+        /* Or for a more subtle look: */
+        /* @apply bg-cyan-500/30 ring-2 ring-cyan-400 ring-inset; */
     }
 
-    .md-content em,
-    .md-content i {
-        font-style: italic;
+    /* Alternative: use pseudo-element overlay for selection */
+    .ProseMirror table td.selectedCell::after,
+    .ProseMirror table th.selectedCell::after {
+        @apply absolute inset-0 bg-blue-400/30 pointer-events-none;
+        content: "";
+        z-index: 2;
     }
 
-    .md-content u {
-        text-decoration: underline;
+    /* Make sure cells can have pseudo-elements */
+    .ProseMirror table td,
+    .ProseMirror table th {
+        @apply relative;
     }
 
-    .md-content s,
-    .md-content strike,
-    .md-content del {
-        text-decoration: line-through;
+    /* Column resize handle - matches your theme */
+    .ProseMirror .column-resize-handle {
+        @apply absolute -right-0.5 top-0 bottom-0 w-1 bg-blue-400 pointer-events-none;
     }
 
-    /* Placeholders for empty editor */
-    .md-content p.is-editor-empty:first-child::before {
+    .ProseMirror.resize-cursor {
+        cursor: ew-resize;
+        cursor: col-resize;
+    }
+
+    /* Optional: Table wrapper for horizontal scroll */
+    .ProseMirror .tableWrapper {
+        @apply overflow-x-auto my-4;
+    }
+
+    /* ========================================
+       HORIZONTAL RULE
+       ======================================== */
+    .ProseMirror hr {
+        @apply border-none border-t border-gray-700 my-6;
+    }
+
+    /* ========================================
+       TEXT FORMATTING
+       ======================================== */
+    .ProseMirror strong,
+    .ProseMirror b {
+        @apply font-bold text-white;
+    }
+
+    .ProseMirror em,
+    .ProseMirror i {
+        @apply italic text-gray-200;
+    }
+
+    .ProseMirror u {
+        @apply underline;
+    }
+
+    .ProseMirror s,
+    .ProseMirror strike,
+    .ProseMirror del {
+        @apply line-through text-gray-400;
+    }
+
+    /* ========================================
+       PLACEHOLDERS
+       ======================================== */
+    .ProseMirror p.is-editor-empty:first-child::before {
         content: attr(data-placeholder);
         float: left;
-        color: #adb5bd;
-        pointer-events: none;
+        @apply text-gray-500 pointer-events-none;
         height: 0;
     }
 
-    /* Task lists */
-    .md-content ul[data-type="taskList"] {
+    .ProseMirror .is-empty::before {
+        content: attr(data-placeholder);
+        float: left;
+        @apply text-gray-500 pointer-events-none;
+        height: 0;
+    }
+
+    /* ========================================
+       TASK LISTS
+       ======================================== */
+    .ProseMirror ul[data-type="taskList"] {
         list-style: none;
         padding: 0;
     }
 
-    .md-content ul[data-type="taskList"] li {
-        display: flex;
-        align-items: start;
+    .ProseMirror ul[data-type="taskList"] li {
+        @apply flex items-start text-gray-200;
         margin-bottom: 0.5rem;
     }
 
-    .md-content ul[data-type="taskList"] li p {
+    .ProseMirror ul[data-type="taskList"] li p {
         margin: 0;
     }
 
-    .md-content ul[data-type="taskList"] li>label {
-        margin-right: 0.5rem;
+    .ProseMirror ul[data-type="taskList"] li>label {
+        @apply mr-2 cursor-pointer;
         user-select: none;
     }
 
-    .md-content ul[data-type="taskList"] li>div {
+    .ProseMirror ul[data-type="taskList"] li>label input[type="checkbox"] {
+        @apply w-4 h-4 bg-gray-700 border border-gray-600 rounded cursor-pointer transition duration-500 hover:border-blue-600 focus:ring-2 focus:ring-blue-600/50;
+    }
+
+    .ProseMirror ul[data-type="taskList"] li>label input[type="checkbox"]:checked {
+        @apply bg-blue-600 border-blue-600;
+    }
+
+    .ProseMirror ul[data-type="taskList"] li>div {
         flex: 1;
     }
 
-    /* Code highlighting */
-    .md-content .hljs-comment,
-    .md-content .hljs-quote {
-        color: #998;
-        font-style: italic;
+    /* ========================================
+       CODE SYNTAX HIGHLIGHTING
+       ======================================== */
+    .ProseMirror .hljs-comment,
+    .ProseMirror .hljs-quote {
+        @apply text-gray-400 italic;
     }
 
-    .md-content .hljs-keyword,
-    .md-content .hljs-selector-tag,
-    .md-content .hljs-subst {
-        color: #333;
-        font-weight: bold;
+    .ProseMirror .hljs-keyword,
+    .ProseMirror .hljs-selector-tag,
+    .ProseMirror .hljs-subst {
+        @apply text-blue-400 font-medium;
     }
 
-    .md-content .hljs-string,
-    .md-content .hljs-doctag {
-        color: #d14;
+    .ProseMirror .hljs-string,
+    .ProseMirror .hljs-doctag {
+        @apply text-green-400;
     }
 
-    .md-content .hljs-title,
-    .md-content .hljs-section,
-    .md-content .hljs-selector-id {
-        color: #900;
-        font-weight: bold;
+    .ProseMirror .hljs-title,
+    .ProseMirror .hljs-section,
+    .ProseMirror .hljs-selector-id {
+        @apply text-yellow-400 font-medium;
     }
 
-    .md-content .hljs-number {
-        color: #099;
+    .ProseMirror .hljs-number {
+        @apply text-purple-400;
     }
 
-    /* Placeholder text */
-    .md-content .is-empty::before {
-        content: attr(data-placeholder);
-        float: left;
-        color: #adb5bd;
-        pointer-events: none;
-        height: 0;
+    .ProseMirror .hljs-function {
+        @apply text-blue-300;
     }
 
-    /* When editor is disabled */
-    .md-content.ProseMirror-disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
+    .ProseMirror .hljs-built_in,
+    .ProseMirror .hljs-builtin-name {
+        @apply text-cyan-400;
     }
 
+    .ProseMirror .hljs-variable,
+    .ProseMirror .hljs-template-variable {
+        @apply text-orange-400;
+    }
+
+    .ProseMirror .hljs-attr,
+    .ProseMirror .hljs-attribute {
+        @apply text-yellow-300;
+    }
+
+    .ProseMirror .hljs-tag {
+        @apply text-blue-300;
+    }
+
+    .ProseMirror .hljs-meta {
+        @apply text-gray-400;
+    }
+
+    /* ========================================
+       EDITOR STATES
+       ======================================== */
+    .ProseMirror.ProseMirror-disabled {
+        @apply opacity-60 cursor-not-allowed;
+    }
+
+    .ProseMirror:focus {
+        outline: none;
+    }
+
+    /* ========================================
+       FOCUS STATES & ACCESSIBILITY
+       ======================================== */
+    .ProseMirror a:focus,
+    .ProseMirror button:focus {
+        @apply outline-2 outline-blue-600 outline-offset-2;
+    }
+
+    /* ========================================
+       RESPONSIVE ADJUSTMENTS
+       ======================================== */
+    @media (max-width: 768px) {
+        .md-content {
+            padding: 0.25rem;
+        }
+
+        .md-content h1 {
+            @apply text-xl;
+        }
+
+        .md-content h2 {
+            @apply text-lg;
+        }
+
+        .md-content table {
+            @apply text-sm;
+        }
+
+        .md-content pre {
+            @apply px-3 py-2 text-sm;
+        }
+    }
 }

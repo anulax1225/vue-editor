@@ -1,10 +1,9 @@
 <script setup>
-import { FlatToolbar, Editor, TabToolbar } from "@/components/editor"
-import { baseExtensions, base, removeExtension } from '@/editor';
-import { vueExtensions } from "./vue-adapter";
+import { FlatToolbar, Editor, TabToolbar, vueExtensions } from "@/proditor-vue"
+import { baseExtensions, base, removeExtension } from '@/proditor';
 import { reactive } from "vue";
 
-const extensions = removeExtension([ ...baseExtensions, ...vueExtensions ], base.Image);
+const extensions = removeExtension([ ...baseExtensions ], base.nodes.Image);
 const content = reactive({
     type: "json",
     value: JSON.parse(localStorage.getItem("doc")) || null,
@@ -20,7 +19,6 @@ const update = ({ editor }) => {
     <div class="m-5">
         <Editor 
             @update="update" 
-            :content="content" 
             :extensions="extensions" 
             :toolbar="TabToolbar" 
         />
