@@ -13,6 +13,7 @@ export class Paragraph extends Node {
                 title: 'Paragraph',
                 action: () => this.editor.chain().setParagraph().run(),
                 isActive: () => this.isActive(),
+                group: "text",
             }
         ]
     }

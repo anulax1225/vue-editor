@@ -19,6 +19,7 @@ export class HorizontalRule extends Node {
                 title: 'Horizontal Rule',
                 action: () => this.editor.chain().setHR().run(),
                 isActive: () => false,
+                group: "blocks",
             }
         ]
     }

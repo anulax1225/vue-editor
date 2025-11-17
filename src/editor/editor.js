@@ -3,13 +3,9 @@ import { EditorState } from 'prosemirror-state'
 import { EditorView } from 'prosemirror-view'
 import { Schema, DOMParser, DOMSerializer } from 'prosemirror-model'
 import { Registry } from './registry.js'
-import { undo, redo, history } from "prosemirror-history"
 import { keymap } from "prosemirror-keymap"
-import { baseKeymap } from "prosemirror-commands"
-import { dropCursor } from "prosemirror-dropcursor"
-import { gapCursor } from "prosemirror-gapcursor"
 import { defaultMarkdownParser, defaultMarkdownSerializer } from "prosemirror-markdown"
-import { inputRules, smartQuotes, emDash, ellipsis } from 'prosemirror-inputrules'
+import { inputRules } from 'prosemirror-inputrules'
 
 export class Editor {
     static ContentType = Object.freeze({
@@ -61,12 +57,7 @@ export class Editor {
         const plugins = this.createPlugins(schema);
         const state = EditorState.create({
             schema,
-            plugins: [
-                ...plugins,
-                dropCursor(),
-                gapCursor(),
-                history(),
-            ],
+            plugins,
             doc: content.value ? Editor.ContentType.parse(content.type, content.value, schema) : undefined,
         })
         this.view = new EditorView(this.element, {
@@ -114,19 +105,15 @@ export class Editor {
     }
 
     createPlugins(schema) {
-        const rules = smartQuotes.concat(ellipsis, emDash);
-        const keymaps = {
-            "Mod-z": undo, 
-            "Mod-y": redo,
-            ...baseKeymap
-        };
+        const rules = [];
+        const keymaps = [];
         this.registry.getSorted().forEach(ext => {
             const extRules = ext.inputRules(schema);
             if (!Array.isArray(extRules)) rules.push(extRules);
             else rules.push(...extRules);
 
             if (ext.keymap && Object.keys(ext.keymap).length > 0) {
-                Object.assign(keymaps, ext.keymap)
+                keymaps.push(keymap(ext.keymap));
             }
         })
 
@@ -134,8 +121,8 @@ export class Editor {
         if (rules.length > 0) {
             plugins.push(inputRules({ rules }))
         } 
-        if (Object.keys(keymaps).length > 0) {
-            plugins.push(keymap(keymaps))
+        if (keymaps.length > 0) {
+            plugins.push(...keymaps)
         }
         this.registry.getSorted().forEach(ext => {
             if (ext.plugins) {
@@ -150,7 +137,7 @@ export class Editor {
         this.registry.getNodes().forEach(node => {
             if (node.component) {
                 nodeViews[node.name] = (pmNode, view, getPos) => {
-                    return new this.nodeAdapter(node.component, pmNode, view, getPos)
+                    return new this.nodeAdapter(node.component, pmNode, view, getPos, this)
                 }
             }
         })

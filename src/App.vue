@@ -1,5 +1,5 @@
 <script setup>
-import { FlatToolbar, Editor } from "@/components/editor"
+import { FlatToolbar, Editor, TabToolbar } from "@/components/editor"
 import { baseExtensions, base, removeExtension } from '@/editor';
 import { vueExtensions } from "./vue-adapter";
 import { reactive } from "vue";
@@ -18,6 +18,11 @@ const update = ({ editor }) => {
 
 <template>
     <div class="m-5">
-        <Editor @update="update" :content="content" :extensions="extensions" :toolbar="FlatToolbar"></Editor>
+        <Editor 
+            @update="update" 
+            :content="content" 
+            :extensions="extensions" 
+            :toolbar="TabToolbar" 
+        />
     </div>
 </template>

@@ -55,11 +55,11 @@ onMounted(() => {
         extensions: [...props.extensions],
         content: props.content,
         nodeAdapter: VueNodeAdapter,
-        editable: false,
+        editable: true,
     });
     editor.value.on("update", e => emit("update", e))
     editor.value.on("transaction", ({ editor }) => {
-        if (props.toolbar && editor.isEditable) toolbar.value.forceRerender();
+        if (editor.isEditable) toolbar.value.forceRerender();
     });
     emit("init", editor)
 })

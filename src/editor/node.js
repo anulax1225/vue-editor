@@ -36,4 +36,8 @@ export class Node extends Extension {
         const { $from } = this.editor.state.selection
         return $from.parent.type.name === this.name
     }
+
+    get schemaContent() {
+        return ["div", ["data-content"], 0];
+    }
 }

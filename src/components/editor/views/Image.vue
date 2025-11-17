@@ -1,5 +1,5 @@
 <template>
-    <div class="my-4 w-fit relative" :class="{
+    <div class="my-1 w-fit relative" :class="{
         'mr-auto': attrs.align === 'left',
         'mx-auto': attrs.align === 'center',
         'ml-auto': attrs.align === 'right',
@@ -50,7 +50,7 @@
         <!-- Controls toolbar -->
         <div 
             v-if="selected && !isLoading" 
-            class="flex gap-2 items-center justify-center mt-2 px-2 py-2 bg-white border border-gray-200 rounded-lg shadow-lg"
+            class="absolute top-0 flex gap-2 items-center justify-center mt-2 px-2 py-2 bg-white border border-gray-200 rounded-lg shadow-lg"
         >
             <button 
                 v-for="alignment in ['left', 'center', 'right']"
@@ -64,13 +64,6 @@
             >
                 {{ alignmentIcon(alignment) }}
             </button>
-
-            <input 
-                v-model="localAlt" 
-                @blur="updateAlt" 
-                placeholder="Alt text..."
-                class="px-3 py-1.5 border border-gray-200 rounded text-sm min-w-[200px] focus:outline-none focus:border-blue-500"
-            />
 
             <button 
                 @click="deleteImage"

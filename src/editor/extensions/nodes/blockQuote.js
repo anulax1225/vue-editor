@@ -16,6 +16,7 @@ export class BlockQuote extends Node {
                 title: 'Blockquote',
                 action: () => this.editor.chain().setBlockQuote().run(),
                 isActive: () => this.isActive(),
+                group: "blocks",
             }
         ];
     }

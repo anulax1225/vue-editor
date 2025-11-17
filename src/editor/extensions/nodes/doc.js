@@ -2,6 +2,11 @@ import { Node } from '@/editor/node.js'
 import { selectNodeBackward, selectNodeForward } from 'prosemirror-commands'
 import { schema as markdownSchema } from 'prosemirror-markdown'
 import { TextSelection } from "prosemirror-state"
+import { baseKeymap } from "prosemirror-commands"
+import { dropCursor } from "prosemirror-dropcursor"
+import { gapCursor } from "prosemirror-gapcursor"
+import { undo, redo, history } from "prosemirror-history"
+import { inputRules, smartQuotes, emDash, ellipsis } from 'prosemirror-inputrules'
 
 export class Doc extends Node {
     get schema() {
@@ -9,13 +14,24 @@ export class Doc extends Node {
     }
 
     get showInMenu() {
-        return false
+        return
+    }
+
+    get plugins() {
+        return [
+            dropCursor(),
+            gapCursor(),
+            history(),
+        ];
     }
 
     get keymap() {
         return {
             "Tab": () => this.editor.chain().next().run(),
             "Shift-Tab": () => this.editor.chain().prev().run(),
+            "Mod-z": undo,
+            "Mod-y": redo,
+            ...baseKeymap
         }
     }
 
@@ -36,7 +52,7 @@ export class Doc extends Node {
                     } else {
                         const afterParent = $from.after($from.depth - 1);
                         const $afterParent = state.doc.resolve(afterParent);
-                        targetNode = $afterParent.nodeAfter;                       
+                        targetNode = $afterParent.nodeAfter;
                         if (!targetNode) {
                             const firstNode = state.doc.child(0);
                             if (firstNode) {
@@ -46,7 +62,7 @@ export class Doc extends Node {
                         } else targetPos = afterParent + targetNode.nodeSize - 1;
                     }
                 } else targetPos = afterCurrentNode + targetNode.nodeSize - 1;
-            
+
                 if (targetNode && targetNode.type.spec.content === "block+") {
                     const firstChild = targetNode.firstChild;
                     if (firstChild) {
@@ -69,7 +85,7 @@ export class Doc extends Node {
                 const $beforeCurrent = state.doc.resolve(beforeCurrentNode);
                 let targetNode = $beforeCurrent.nodeBefore, targetPos;
                 if (!targetNode) {
-                    if ($from.depth <= 1) targetPos = state.doc.content.size; 
+                    if ($from.depth <= 1) targetPos = state.doc.content.size;
                     else {
                         const beforeParent = $from.before($from.depth - 1);
                         const $beforeParent = state.doc.resolve(beforeParent);
@@ -93,5 +109,9 @@ export class Doc extends Node {
                 return false;
             },
         }
+    }
+
+    inputRules(schema) {
+        return smartQuotes.concat(ellipsis, emDash);
     }
 }

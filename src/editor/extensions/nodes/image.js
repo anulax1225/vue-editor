@@ -15,6 +15,7 @@ export class Image extends Node {
                 title: 'Image',
                 action: () => this.editor.chain().setImage().run(),
                 isActive: () => false,
+                group: "media",
             }
         ]
     }

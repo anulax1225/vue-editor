@@ -18,6 +18,7 @@ export class CodeBlock extends Node {
                 title: 'Code Block',
                 action: () => this.editor.chain().setCodeBlock().run(),
                 isActive: () => this.isActive(),
+                group: "blocks",
             }
         ]
     }

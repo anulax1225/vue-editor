@@ -44,7 +44,8 @@ export class ClickCounter extends Node {
             icon: '🔢',
             title: 'Click Counter',
             action: () => this.editor.chain().setClickCounter().run(),
-            
+            group: "blocks",
+            isActive: () => false,
         }
     ]
   }

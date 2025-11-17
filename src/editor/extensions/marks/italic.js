@@ -20,6 +20,7 @@ export class Italic extends Mark {
                 title: 'Italic',
                 action: () => this.editor.chain().toggleItalic().run(),
                 isActive: () => this.isActive(),
+                group: "text",
             }
         ]
     }

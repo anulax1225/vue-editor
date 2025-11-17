@@ -1,6 +1,6 @@
 <template v-if="editor">
     <div class="flex gap-2 items-center">
-        <Badge v-for="(item, index) in flattenedItems" :key="`${item.name}-${index}`" @click="handleClick(item)" :class="item.isActive() ? 'shadow-lg bg-red-500' : '' ">
+        <Badge v-for="(item, index) in flattenedItems" :key="`${item.name}-${index}`" @click="handleClick(item)" :class="item.isActive?.() ? 'shadow-lg bg-red-500' : '' ">
             {{ item.icon }}
         </Badge>
     </div>

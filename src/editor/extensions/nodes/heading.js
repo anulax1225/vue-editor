@@ -32,6 +32,7 @@ export class Heading extends Node {
                     this.isActive() && $from.parent.attrs.level === level
                 );
             },
+            group: "text",
         }))
     }
 

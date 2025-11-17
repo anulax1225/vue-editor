@@ -20,6 +20,7 @@ export class Bold extends Mark {
                 title: 'Bold',
                 action: () => this.editor.chain().toggleBold().run(),
                 isActive: () => this.isActive(),
+                group: "text",
             }
         ]
     }
