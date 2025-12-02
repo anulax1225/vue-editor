@@ -5,7 +5,12 @@ import { markdownMarkInputRule } from '@/proditor/utils.js'
 
 export class Code extends Mark {
     get schema() {
-        return markdownSchema.spec.marks.get('code')
+        return {
+            code: true,
+            parseDOM: [{ tag: "code" }],
+            toDOM() { return ["code"] },
+            excludes: '_',
+        }
     }
 
     get menuItem() {

@@ -262,15 +262,15 @@
        CODE BLOCKS
        ======================================== */
     .ProseMirror pre {
-        @apply w-fit my-3 bg-gray-800 border-l-4 border-blue-600 text-gray-200 px-4 py-3 rounded shadow-sm whitespace-pre-wrap transition duration-500 hover:shadow-md;
+        @apply w-fit my-3 bg-gray-800 border-l-4 border-blue-600 text-gray-200 px-2 py-1 rounded shadow-sm whitespace-pre-wrap transition duration-500 hover:shadow-md;
     }
 
     .ProseMirror code {
-        @apply px-2 py-1 bg-gray-700 text-gray-200 rounded font-mono text-sm;
+        @apply px-1 py-0.5 bg-gray-800 text-gray-200 rounded font-mono text-sm;
     }
 
     .ProseMirror pre code {
-        @apply p-0 bg-transparent text-gray-200;
+        @apply p-0 bg-gray-800 text-gray-200;
     }
 
     /* ========================================

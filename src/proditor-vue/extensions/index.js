@@ -10,6 +10,9 @@ import { CardHeader } from "./nodes/cardHeader";
 import { CardBody } from "./nodes/cardBody";
 import { CardFooter } from "./nodes/cardFooter";
 import { Hero } from "./nodes/hero";
+import { TextColorWithComponent } from "./mark/textColorWithComponent";
+import { HeadingWithComponent } from "./nodes/headingWithComponent";
+import { TableWithComponent } from "./nodes/tableWithComponent";
 
 export const base = {
     Image,
@@ -23,7 +26,10 @@ export const base = {
     CardHeader,
     CardBody,
     CardFooter,
-    Hero
+    Hero,
+    HeadingWithComponent,
+    TextColorWithComponent,
+    TableWithComponent,
 }
 
 export const extensions = [
@@ -38,5 +44,8 @@ export const extensions = [
     CardHeader,
     CardBody,
     CardFooter,
-    Hero
+    Hero,
+    HeadingWithComponent,
+    TextColorWithComponent,
+    TableWithComponent,
 ];

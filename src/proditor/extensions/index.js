@@ -24,6 +24,8 @@ import { TableHeader } from "./nodes/tableHeader.js";
 import { OrderedList } from "./nodes/orderedList.js";
 import { ListItem } from "./nodes/listItem.js";
 import { BulletList } from "./nodes/bulletList.js";
+import { Code } from "./marks/code.js";
+import { Link } from "./marks/link.js";
 
 export const base = {
     nodes: {
@@ -47,6 +49,8 @@ export const base = {
     marks: {
         Bold,
         Italic,
+        Code,
+        Link,
         Underline,
         Highlight,
         Strike,
@@ -61,13 +65,13 @@ export const base = {
 export const extensions = [
     Doc,
     Text,
-
     Paragraph,
     Heading,
     HardBreak,
-
     Bold,
     Italic,
+    Code,
+    Link,
     Underline,
     Highlight,
     Strike,
@@ -76,7 +80,6 @@ export const extensions = [
     TextColor,
     FontSize,
     FontFamily,
-
     CodeBlock,
     HorizontalRule,
     BlockQuote,

@@ -1,13 +1,14 @@
 <template>
+    <button class="border rounded-lg px-2 py-1 my-2" @click="toggleEditing">
+        {{ editable ? 'Preview' : 'Edition' }}
+    </button>
     <div :class="props.asSidebar ? 'flex h-full items-stretch border-t' : ''">
         <component 
-        v-if="editor && editor.isEditable" 
+        v-if="editor && editable" 
         :is="props.toolbar" ref="toolbar" 
         class="border-gray-800 pt-3" 
         :class="props.asSidebar ? 'max-w-44 border-r border-b pr-3' : 'border-b pb-3 mb-3'"/>
         <div class="w-full">
-            <div class="text-2xl font-bold text-white px-3 py-3 border-b" contenteditable="">Nouveau document</div>
-            <!-- Prosemirror editor content -->
             <div @focus="editor.focus('end')" ref="element" class="md-content w-full px-3 border-b"></div>
         </div>
     </div>
@@ -33,6 +34,7 @@ const props = defineProps({
             type: Editor.ContentType.MARKDOWN,
             value: `
 # Informations Générales
+[google.com](https://google.com/)
 
 **Type de produit** :  Chaise de bar
 
@@ -65,10 +67,16 @@ const props = defineProps({
     },
 });
 
+const editable = ref(false);
 const toolbar = ref(null);
 const emit = defineEmits(['init', 'update'])
 const element = ref(null);
 const editor = shallowRef(null);
+
+const toggleEditing = () => {
+    editable.value = !editable.value;
+    editor.value.setEditable(editable.value);
+}
 
 provide('editor', editor);
 
@@ -78,7 +86,7 @@ onMounted(() => {
         extensions: [...props.extensions],
         content: props.content,
         nodeAdapter: VueNodeAdapter,
-        editable: true,
+        editable: editable.value,
     });
     editor.value.on("update", e => emit("update", e))
     editor.value.on("transaction", ({ editor }) => {

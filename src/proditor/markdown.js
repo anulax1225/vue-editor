@@ -1,307 +1,417 @@
-// tableMarkdown.js
 import { MarkdownParser, MarkdownSerializer } from 'prosemirror-markdown'
+import MarkdownIt from "markdown-it"
 import { extensions } from './extensions'
 import { tableNodes } from 'prosemirror-tables'
 import { Schema } from 'prosemirror-model'
 
-/**
- * Creates an extended markdown parser that supports tables
- */
-export function createCompleteMarkdownParser(schema) {
-    // Get the base parser configuration
-    const baseParser = MarkdownParser.fromSchema(schema)
-    
-    // Extend with table parsing rules
-    const tokens = {
-        ...baseParser.tokens,
-        table: {
-            block: 'table',
-            getAttrs: () => ({}),
-            parse: (state, token) => {
-                const rows = []
-                const children = token.children || []
-                
-                for (let i = 0; i < children.length; i++) {
-                    const child = children[i]
-                    if (child.type === 'tr') {
-                        rows.push(child)
-                    }
-                }
-                
-                state.openNode(schema.nodes.table)
-                
-                for (let i = 0; i < rows.length; i++) {
-                    parseTableRow(state, rows[i], schema, i === 0)
-                }
-                
-                state.closeNode()
-            }
-        },
-        tr: { block: 'table_row' },
-        th: { block: 'table_header' },
-        td: { block: 'table_cell' }
-    }
-    
-    return new MarkdownParser(schema, baseParser.tokenizer, tokens)
-}
-
-function parseTableRow(state, token, schema, isHeader) {
-    state.openNode(schema.nodes.table_row)
-    
-    const cells = token.children || []
-    
-    for (const cell of cells) {
-        const cellType = isHeader || cell.type === 'th' 
-            ? schema.nodes.table_header 
-            : schema.nodes.table_cell
-        
-        state.openNode(cellType)
-        state.openNode(schema.nodes.paragraph)
-        
-        // Parse cell content
-        if (cell.children) {
-            for (const child of cell.children) {
-                state.addNode(parseInline(child, schema, state))
-            }
-        }
-        
-        state.closeNode() // paragraph
-        state.closeNode() // cell
-    }
-    
-    state.closeNode() // row
-}
-
-function parseInline(token, schema, state) {
-    if (token.type === 'text') {
-        return schema.text(token.content)
-    }
-    // Add more inline parsing as needed
-    return schema.text(token.content || '')
-}
-
-/**
- * Creates an extended markdown serializer that supports tables
- */
-export function createCompleteMarkdownSerializer(schema) {
-    return new MarkdownSerializer(
-        {
-            // Block nodes
-            paragraph(state, node) {
-                state.renderInline(node)
-                state.closeBlock(node)
-            },
-            blockquote(state, node) {
-                state.wrapBlock("> ", null, node, () => state.renderContent(node))
-            },
-            code_block(state, node) {
-                state.write("```" + (node.attrs.params || "") + "\n")
-                state.text(node.textContent, false)
-                state.ensureNewLine()
-                state.write("```")
-                state.closeBlock(node)
-            },
-            heading(state, node) {
-                state.write(state.repeat("#", node.attrs.level) + " ")
-                state.renderInline(node)
-                state.closeBlock(node)
-            },
-            horizontal_rule(state, node) {
-                state.write(node.attrs.markup || "---")
-                state.closeBlock(node)
-            },
-            bullet_list(state, node) {
-                state.renderList(node, "  ", () => (node.attrs.bullet || "*") + " ")
-            },
-            ordered_list(state, node) {
-                let start = node.attrs.order || 1
-                let maxW = String(start + node.childCount - 1).length
-                let space = state.repeat(" ", maxW + 2)
-                state.renderList(node, space, i => {
-                    let nStr = String(start + i)
-                    return state.repeat(" ", maxW - nStr.length) + nStr + ". "
-                })
-            },
-            list_item(state, node) {
-                state.renderContent(node)
-            },
-            hard_break(state, node, parent, index) {
-                for (let i = index + 1; i < parent.childCount; i++)
-                    if (parent.child(i).type != node.type) {
-                        state.write("\\\n")
-                        return
-                    }
-            },
-            image(state, node) {
-                state.write("![" + state.esc(node.attrs.alt || "") + "](" + 
-                    state.esc(node.attrs.src) +
-                    (node.attrs.title ? " " + state.quote(node.attrs.title) : "") + ")")
-            },
-            
-            // Table nodes
-            table(state, node) {
-                state.renderTable(node)
-                state.closeBlock(node)
-            },
-            table_row(state, node) {
-                // Handled by renderTable
-            },
-            table_cell(state, node) {
-                // Handled by renderTable
-            },
-            table_header(state, node) {
-                // Handled by renderTable
-            }
-        },
-        {
-            // Mark serializers
-            em: { open: "*", close: "*", mixable: true, expelEnclosingWhitespace: true },
-            strong: { open: "**", close: "**", mixable: true, expelEnclosingWhitespace: true },
-            link: {
-                open(_state, mark, parent, index) {
-                    return "["
-                },
-                close(state, mark, parent, index) {
-                    return "](" + state.esc(mark.attrs.href) + 
-                        (mark.attrs.title ? " " + state.quote(mark.attrs.title) : "") + ")"
-                }
-            },
-            code: { open: "`", close: "`", escape: false }
-        }
-    )
-}
-
-// Extend MarkdownSerializer prototype with table rendering
-MarkdownSerializer.prototype.renderTable = function(node) {
-    const rows = []
-    const widths = []
-    
-    // First pass: collect all cell contents and calculate column widths
-    node.forEach((row, rowOffset, rowIndex) => {
-        const cells = []
-        row.forEach((cell, cellOffset, cellIndex) => {
-            const content = this.renderTableCell(cell)
-            cells.push(content)
-            
-            // Track max width for each column
-            if (!widths[cellIndex]) widths[cellIndex] = 3 // minimum width
-            widths[cellIndex] = Math.max(widths[cellIndex], content.length)
-        })
-        rows.push({ cells, isHeader: rowIndex === 0 })
-    })
-    
-    // Second pass: render with proper alignment
-    rows.forEach((row, rowIndex) => {
-        this.write("| ")
-        row.cells.forEach((content, cellIndex) => {
-            const width = widths[cellIndex]
-            const padded = content.padEnd(width, ' ')
-            this.write(padded + " | ")
-        })
-        this.write("\n")
-        
-        // Add separator after header row
-        if (rowIndex === 0) {
-            this.write("| ")
-            widths.forEach(width => {
-                this.write(this.repeat("-", width) + " | ")
-            })
-            this.write("\n")
-        }
-    })
-}
-
-MarkdownSerializer.prototype.renderTableCell = function(node) {
-    const state = {
-        out: "",
-        closed: false,
-        nodes: this.nodes,
-        marks: this.marks,
-        delim: this.delim,
-        esc: this.esc.bind(this),
-        quote: this.quote.bind(this),
-        repeat: this.repeat.bind(this),
-        renderContent(node) {
-            node.forEach((child, offset, index) => {
-                this.render(child, node, index)
-            }, this)
-        },
-        renderInline(parent) {
-            let active = []
-            parent.forEach((child, offset, index) => {
-                let marks = child.marks
-                
-                // Close marks that are not in the new set
-                let i = 0
-                while (i < active.length) {
-                    if (!marks.includes(active[i])) {
-                        this.text(this.marks[active[i].type.name].close, false)
-                        active.splice(i, 1)
-                    } else {
-                        i++
-                    }
-                }
-                
-                // Open marks that are in the new set but not active
-                marks.forEach(mark => {
-                    if (!active.includes(mark)) {
-                        active.push(mark)
-                        this.text(this.marks[mark.type.name].open, false)
-                    }
-                })
-                
-                if (child.isText) {
-                    this.text(child.text.replace(/\|/g, '\\|').replace(/\n/g, ' '), true)
-                }
-            }, this)
-            
-            // Close remaining marks
-            while (active.length) {
-                this.text(this.marks[active.pop().type.name].close, false)
-            }
-        },
-        render(node, parent, index) {
-            if (node.isText) {
-                this.text(node.text.replace(/\|/g, '\\|').replace(/\n/g, ' '), true)
-            } else if (this.nodes[node.type.name]) {
-                this.nodes[node.type.name](this, node, parent, index)
-            } else {
-                this.renderContent(node)
-            }
-        },
-        text(text, escape) {
-            if (escape !== false) text = this.esc(text)
-            this.out += text
-        }
-    }
-    
-    node.forEach((child, offset, index) => {
-        if (child.type.name === 'paragraph') {
-            state.renderInline(child)
-        } else {
-            state.render(child, node, index)
-        }
-    })
-    
-    return state.out.trim()
-}
-
+// Build schema from extensions and table nodes
 const schema = new Schema({
-    nodes: [
-        ...extensions.filter(ext => ext.type === 'node'),
-        tableNodes({
+    nodes: {
+        ...extensions
+            .map(ext => new ext())
+            .filter(ext => ext.type === 'node')
+            .reduce((acc, ext) => {
+                acc[ext.name] = ext.schema
+                return acc
+            }, {}),
+        ...tableNodes({
             tableGroup: "block",
             cellContent: "block+",
         }),
-    ],
-    marks:  extensions.filter(ext => ext.type === 'mark'),
+    },
+    marks: extensions
+        .map(ext => new ext())
+        .filter(ext => ext.type === 'mark')
+        .reduce((acc, ext) => {
+            acc[ext.name] = ext.schema
+            return acc
+        }, {}),
 })
 
-// Create parser and serializer with table support
-export const markdownParser = createCompleteMarkdownParser(schema)
-export const markdownSerializer = createCompleteMarkdownSerializer(schema)
+function listIsTight(tokens, i) {
+    while (++i < tokens.length) {
+        if (tokens[i].type !== "list_item_open") return tokens[i].hidden
+    }
+    return false
+}
 
-// Use them in your editor
+/**
+ * Preprocesses markdown-it tokens to wrap inline content in table cells with paragraphs.
+ * This is necessary because prosemirror-tables expects cellContent: "block+" but
+ * markdown-it produces direct inline tokens inside th/td.
+ */
+function wrapTableCellInlineContent(tokens) {
+    const result = []
+    
+    for (let i = 0; i < tokens.length; i++) {
+        const token = tokens[i]
+        result.push(token)
+        
+        // Check if this is a table header or cell opening
+        if (token.type === 'th_open' || token.type === 'td_open') {
+            // Look ahead to see if next token is inline
+            if (i + 1 < tokens.length && tokens[i + 1].type === 'inline') {
+                // Insert paragraph_open before the inline content
+                result.push({
+                    type: 'paragraph_open',
+                    tag: 'p',
+                    nesting: 1,
+                    attrs: null,
+                    map: null,
+                    level: token.level + 1,
+                    children: null,
+                    content: '',
+                    markup: '',
+                    info: '',
+                    meta: null,
+                    block: true,
+                    hidden: false
+                })
+                
+                // Add the inline token
+                i++
+                result.push(tokens[i])
+                
+                // Insert paragraph_close after the inline content
+                result.push({
+                    type: 'paragraph_close',
+                    tag: 'p',
+                    nesting: -1,
+                    attrs: null,
+                    map: null,
+                    level: token.level + 1,
+                    children: null,
+                    content: '',
+                    markup: '',
+                    info: '',
+                    meta: null,
+                    block: true,
+                    hidden: false
+                })
+            }
+        }
+    }
+    
+    return result
+}
+
+// Custom MarkdownParser that preprocesses tokens
+class TableAwareMarkdownParser extends MarkdownParser {
+    parse(text, markdownEnv = {}) {
+        // Parse with markdown-it
+        const tokens = this.tokenizer.parse(text, markdownEnv)
+        
+        // Preprocess to wrap table cell content in paragraphs
+        const processedTokens = wrapTableCellInlineContent(tokens)
+        
+        // Use parent class's parsing logic with processed tokens
+        // We need to manually create the parse state and parse the processed tokens
+        const MarkdownParseState = this.constructor.MarkdownParseState
+        
+        // Since MarkdownParseState is not exported, we'll use the standard parse
+        // but replace the tokenizer output
+        const originalParse = this.tokenizer.parse
+        this.tokenizer.parse = () => processedTokens
+        
+        try {
+            return super.parse(text, markdownEnv)
+        } finally {
+            this.tokenizer.parse = originalParse
+        }
+    }
+}
+
+export function createMarkdownParser(schema) {
+    // Initialize markdown-it with table support enabled
+    const md = MarkdownIt("commonmark", { html: false }).enable('table')
+    
+    // Build tokens object based on what exists in the schema
+    const tokens = {}
+    
+    // Node tokens
+    if (schema.nodes.blockquote) {
+        tokens.blockquote = { block: "blockquote" }
+    }
+    if (schema.nodes.paragraph) {
+        tokens.paragraph = { block: "paragraph" }
+    }
+    if (schema.nodes.list_item) {
+        tokens.list_item = { block: "list_item" }
+    }
+    if (schema.nodes.bullet_list) {
+        tokens.bullet_list = { 
+            block: "bullet_list", 
+            getAttrs: (_, tokens, i) => ({ tight: listIsTight(tokens, i) }) 
+        }
+    }
+    if (schema.nodes.ordered_list) {
+        tokens.ordered_list = {
+            block: "ordered_list",
+            getAttrs: (tok, tokens, i) => ({
+                order: +tok.attrGet("start") || 1,
+                tight: listIsTight(tokens, i)
+            })
+        }
+    }
+    if (schema.nodes.heading) {
+        tokens.heading = { 
+            block: "heading", 
+            getAttrs: tok => ({ level: +tok.tag.slice(1) }) 
+        }
+    }
+    if (schema.nodes.code_block) {
+        tokens.code_block = { block: "code_block", noCloseToken: true }
+        tokens.fence = { 
+            block: "code_block", 
+            getAttrs: tok => ({ params: tok.info || "" }), 
+            noCloseToken: true 
+        }
+    }
+    if (schema.nodes.horizontal_rule) {
+        tokens.hr = { node: "horizontal_rule" }
+    }
+    if (schema.nodes.image) {
+        tokens.image = {
+            node: "image",
+            getAttrs: tok => ({
+                src: tok.attrGet("src"),
+                title: tok.attrGet("title") || null,
+                alt: (tok.children && tok.children[0] && tok.children[0].content) || null
+            })
+        }
+    }
+    if (schema.nodes.hard_break) {
+        tokens.hardbreak = { node: "hard_break" }
+    }
+    
+    // Mark tokens
+    if (schema.marks.em) {
+        tokens.em = { mark: "em" }
+    } else {
+        tokens.em = { ignore: true }
+    }
+    
+    if (schema.marks.strong) {
+        tokens.strong = { mark: "strong" }
+    } else {
+        tokens.strong = { ignore: true }
+    }
+    
+    if (schema.marks.link) {
+        tokens.link = {
+            mark: "link",
+            getAttrs: tok => ({
+                href: tok.attrGet("href"),
+                title: tok.attrGet("title") || null
+            })
+        }
+    } else {
+        tokens.link = { ignore: true }
+    }
+    
+    if (schema.marks.code) {
+        tokens.code_inline = { mark: "code", noCloseToken: true }
+    } else {
+        tokens.code_inline = { ignore: true }
+    }
+    
+    // Table tokens
+    if (schema.nodes.table) {
+        tokens.table = { block: 'table' }
+        tokens.thead = { ignore: true }
+        tokens.tbody = { ignore: true }
+    }
+    
+    if (schema.nodes.table_row) {
+        tokens.tr = { block: 'table_row' }
+    }
+    
+    // Table cells - with preprocessing, these can be simple
+    if (schema.nodes.table_header) {
+        tokens.th = { block: 'table_header' }
+    }
+    
+    if (schema.nodes.table_cell) {
+        tokens.td = { block: 'table_cell' }
+    }
+
+    // Use custom parser that preprocesses tokens
+    return new TableAwareMarkdownParser(schema, md, tokens)
+}
+
+export function createMarkdownSerializer(schema) {
+    const nodes = {}
+    const marks = {}
+    
+    // Build serializer based on what exists in schema
+    if (schema.nodes.paragraph) {
+        nodes.paragraph = function(state, node) {
+            state.renderInline(node)
+            state.closeBlock(node)
+        }
+    }
+    
+    if (schema.nodes.blockquote) {
+        nodes.blockquote = function(state, node) {
+            state.wrapBlock("> ", null, node, () => state.renderContent(node))
+        }
+    }
+    
+    if (schema.nodes.code_block) {
+        nodes.code_block = function(state, node) {
+            state.write("```" + (node.attrs.params || "") + "\n")
+            state.text(node.textContent, false)
+            state.ensureNewLine()
+            state.write("```")
+            state.closeBlock(node)
+        }
+    }
+    
+    if (schema.nodes.heading) {
+        nodes.heading = function(state, node) {
+            state.write(state.repeat("#", node.attrs.level) + " ")
+            state.renderInline(node)
+            state.closeBlock(node)
+        }
+    }
+    
+    if (schema.nodes.horizontal_rule) {
+        nodes.horizontal_rule = function(state, node) {
+            state.write(node.attrs.markup || "---")
+            state.closeBlock(node)
+        }
+    }
+    
+    if (schema.nodes.bullet_list) {
+        nodes.bullet_list = function(state, node) {
+            state.renderList(node, "  ", () => (node.attrs.bullet || "*") + " ")
+        }
+    }
+    
+    if (schema.nodes.ordered_list) {
+        nodes.ordered_list = function(state, node) {
+            let start = node.attrs.order || 1
+            let maxW = String(start + node.childCount - 1).length
+            let space = state.repeat(" ", maxW + 2)
+            state.renderList(node, space, i => {
+                let nStr = String(start + i)
+                return state.repeat(" ", maxW - nStr.length) + nStr + ". "
+            })
+        }
+    }
+    
+    if (schema.nodes.list_item) {
+        nodes.list_item = function(state, node) {
+            state.renderContent(node)
+        }
+    }
+    
+    if (schema.nodes.hard_break) {
+        nodes.hard_break = function(state, node, parent, index) {
+            for (let i = index + 1; i < parent.childCount; i++) {
+                if (parent.child(i).type !== node.type) {
+                    state.write("\\\n")
+                    return
+                }
+            }
+        }
+    }
+    
+    if (schema.nodes.image) {
+        nodes.image = function(state, node) {
+            state.write("![" + state.esc(node.attrs.alt || "") + "](" +
+                state.esc(node.attrs.src) +
+                (node.attrs.title ? " " + state.quote(node.attrs.title) : "") + ")")
+        }
+    }
+    
+    // Table serialization
+    if (schema.nodes.table) {
+        nodes.table = function(state, node) {
+            const rows = []
+            const widths = []
+
+            node.forEach((row) => {
+                const cells = []
+                row.forEach((cell) => {
+                    const content = getCellContent(cell, state)
+                    cells.push(content)
+                    const colIndex = cells.length - 1
+                    widths[colIndex] = Math.max(widths[colIndex] || 3, content.length)
+                })
+                rows.push(cells)
+            })
+
+            rows.forEach((cells, rowIndex) => {
+                state.write("|")
+                cells.forEach((content, colIndex) => {
+                    state.write(" " + content.padEnd(widths[colIndex]) + " |")
+                })
+                state.write("\n")
+
+                if (rowIndex === 0) {
+                    state.write("|")
+                    widths.forEach(width => {
+                        state.write(" " + state.repeat("-", width) + " |")
+                    })
+                    state.write("\n")
+                }
+            })
+
+            state.closeBlock(node)
+        }
+    }
+    
+    if (schema.nodes.table_row) {
+        nodes.table_row = function() { }
+    }
+    if (schema.nodes.table_cell) {
+        nodes.table_cell = function() { }
+    }
+    if (schema.nodes.table_header) {
+        nodes.table_header = function() { }
+    }
+    
+    // Marks
+    if (schema.marks.em) {
+        marks.em = { open: "*", close: "*", mixable: true, expelEnclosingWhitespace: true }
+    }
+    if (schema.marks.strong) {
+        marks.strong = { open: "**", close: "**", mixable: true, expelEnclosingWhitespace: true }
+    }
+    if (schema.marks.link) {
+        marks.link = {
+            open: "[",
+            close(state, mark) {
+                return "](" + state.esc(mark.attrs.href) +
+                    (mark.attrs.title ? " " + state.quote(mark.attrs.title) : "") + ")"
+            }
+        }
+    }
+    if (schema.marks.code) {
+        marks.code = { open: "`", close: "`", escape: false }
+    }
+
+    return new MarkdownSerializer(nodes, marks)
+}
+
+function getCellContent(cell, state) {
+    let content = ""
+    cell.forEach((node) => {
+        if (node.type.name === 'paragraph') {
+            node.forEach((child) => {
+                if (child.isText) {
+                    content += child.text.replace(/\|/g, '\\|').replace(/\n/g, ' ')
+                }
+            })
+        }
+    })
+    return content.trim()
+}
+
+export const markdownParser = createMarkdownParser(schema)
+export const markdownSerializer = createMarkdownSerializer(schema)
+
 export function getMarkdown(doc) {
     return markdownSerializer.serialize(doc)
 }

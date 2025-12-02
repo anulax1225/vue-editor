@@ -1,7 +1,13 @@
 export { default as Editor } from "./Editor.vue";
 
 export { default as FlatToolbar } from "./toolbars/FlatToolbar.vue";
+export { default as FlatComponentToolbar } from './toolbars/FlatComponentToolbar.vue';
 export { default as TabToolbar } from "./toolbars/TabToolbar.vue";
+export { default as TabComponentToolbar } from './toolbars/TabComponentToolbar.vue';
+
+export { default as TextColorItem } from "./menu-items/TextColor.vue"
+export { default as HeadingSelectorItem } from "./menu-items/HeadingSelector.vue"
+export { default as TablePanelItem } from "./menu-items/TablePanel.vue"
 
 export { default as ImageView } from "./views/Image.vue"
 export { default as DetailsView } from "./views/Details.vue"

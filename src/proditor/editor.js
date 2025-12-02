@@ -98,6 +98,7 @@ export class Editor {
 
     setEditable(flag) {
         this.editable = flag;
+        this.view.setProps({ editable: () => this.isEditable, })
     }
 
     get isEditable() {
