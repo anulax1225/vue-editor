@@ -21,6 +21,7 @@ export class Bold extends Mark {
                 action: () => this.editor.chain().toggleBold().run(),
                 isActive: () => this.isActive(),
                 group: "text",
+                showInBubble: true,
             }
         ]
     }

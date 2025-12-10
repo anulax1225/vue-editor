@@ -19,6 +19,7 @@ export class CodeBlock extends Node {
                 action: () => this.editor.chain().setCodeBlock().run(),
                 isActive: () => this.isActive(),
                 group: "blocks",
+                showInBubble: true,
             }
         ]
     }

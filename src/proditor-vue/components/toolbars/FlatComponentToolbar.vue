@@ -1,37 +1,12 @@
 <template v-if="editor">
     <div>
-        <div class="flex gap-1 items-center flex-wrap pb-1 mb-1 border-b">
-            <!-- Iterate through items -->
-            <template v-for="(item, index) in items.filter(item => !!item.component)" :key="`${item.title}-${index}`">
-
-                <!-- Regular menu item with tooltip -->
+        <div class="flex gap-1 items-center flex-wrap pb-1">
+            <template v-for="(item, index) in items" :key="`${item.title}-${index}`">
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger as-child>
                             <component ref="componentItems" v-if="item.component" :is="item.component"
-                                :menuItem="item" />
-                            <Badge v-else variant="outline" @click="handleClick(item)"
-                                class="pb-1 cursor-pointer transition duration-500"
-                                :class="[item.isActive() ? 'bg-gray-800 shadow-lg' : 'hover:bg-gray-700']">
-                                <component v-if="iconMap[item.title.toLowerCase()]"
-                                    :is="iconMap[item.title.toLowerCase()]" class="w-4 h-4" />
-                                <span v-else class="text-xs">{{ item.title }}</span>
-                            </Badge>
-                        </TooltipTrigger>
-                        <TooltipContent class="bg-gray-600 fill-gray-600 text-white">
-                            <p>{{ item.title }}</p>
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
-            </template>
-        </div>
-        <div class="flex gap-1 items-center flex-wrap">
-            <template v-for="(item, index) in items.filter(item => !item.component)" :key="`${item.title}-${index}`">
-                <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger as-child>
-                            <component ref="componentItems" v-if="item.component" :is="item.component"
-                                :menuItem="item" />
+                                :menuItem="item" :editor="editor" />
                             <Badge v-else variant="outline" @click="handleClick(item)"
                                 class="pb-1 cursor-pointer transition duration-500"
                                 :class="[item.isActive() ? 'bg-gray-800 shadow-lg' : 'hover:bg-gray-700']">
@@ -67,7 +42,11 @@ const instance = getCurrentInstance()
 const editor = inject('editor')
 
 const items = computed(() => {
-    return editor.value.getMenuItems();
+    return editor.value.getMenuItems((a, b) => {
+        if (a.type === "mark") return -1;
+        if (b.type === "mark") return 1;
+        return 0;
+    });
 })
 
 const iconMap = {

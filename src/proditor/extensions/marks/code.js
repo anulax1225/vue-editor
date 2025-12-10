@@ -21,6 +21,7 @@ export class Code extends Mark {
                 action: () => this.editor.chain().toggleCode().run(),
                 isActive: () => this.isActive(),
                 group: "text",
+                showInBubble: true,
             }
         ]
     }

@@ -26,6 +26,7 @@ export class Strike extends Mark {
                 action: () => this.editor.chain().toggleStrike().run(),
                 isActive: () => this.isActive(),
                 group: "text",
+                showInBubble: true,
             }
         ]
     }

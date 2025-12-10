@@ -6,6 +6,7 @@ import { Registry } from './registry.js'
 import { keymap } from "prosemirror-keymap"
 import { parseMarkdown, getMarkdown } from './markdown.js'
 import { inputRules } from 'prosemirror-inputrules'
+import { Step } from 'prosemirror-transform'
 
 export class Editor {
     static ContentType = Object.freeze({
@@ -15,7 +16,7 @@ export class Editor {
         TEXT: "text",
         parse(type, content, schema) {
             switch (type) {
-                case "html": 
+                case "html":
                     const parser = new window.DOMParser()
                     const dom = parser.parseFromString(content, 'text/html')
                     return DOMParser.fromSchema(schema).parse(dom.body)
@@ -27,18 +28,20 @@ export class Editor {
         },
         serialize(type, view) {
             switch (type) {
-                case "html": 
+                case "html":
                     const div = document.createElement('div')
                     const fragment = DOMSerializer.fromSchema(view.state.schema)
                         .serializeFragment(view.state.doc.content)
                     div.appendChild(fragment)
                     return div.innerHTML
-                case "json": return view.state.doc.toJSON()
+                case "json":
+                    console.log();
+                    return view.state.doc.toJSON()
                 case "markdown": return getMarkdown(view.state.doc)
                 case "text": return view.state.doc.textContent
             }
             return undefined
-        }
+        },
     })
 
     constructor({ element, extensions = [], content = '', nodeAdapter = null, editable = true }) {
@@ -121,7 +124,7 @@ export class Editor {
         const plugins = []
         if (rules.length > 0) {
             plugins.push(inputRules({ rules }))
-        } 
+        }
         if (keymaps.length > 0) {
             plugins.push(...keymaps)
         }
@@ -199,12 +202,12 @@ export class Editor {
     }
 
 
-    getMenuItems() {
-        return this.registry.getMenuItems()
+    getMenuItems(predicate = (a, b) => 0) {
+        return this.registry.getMenuItems(predicate)
     }
 
-    getBubbleMenuItems() {
-        return this.registry.getBubbleMenuItems()
+    getBubbleMenuItems(predicate = (a, b) => 0) {
+        return this.registry.getBubbleMenuItems(predicate)
     }
 
     get state() {

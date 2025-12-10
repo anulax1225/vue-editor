@@ -42,6 +42,7 @@ export class FontSize extends Mark {
                 action: () => this.editor.chain().setFontSize('18px').run(),
                 isActive: () => this.isActive(),
                 group: 'text',
+                showInBubble: true,
             },
         ]
     }

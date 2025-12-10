@@ -26,6 +26,7 @@ export class Subscript extends Mark {
                 action: () => this.editor.chain().toggleSubscript().run(),
                 isActive: () => this.isActive(),
                 group: 'text',
+                showInBubble: true,
             },
         ]
     }

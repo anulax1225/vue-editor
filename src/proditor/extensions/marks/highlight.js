@@ -42,6 +42,7 @@ export class Highlight extends Mark {
                 action: () => this.editor.chain().toggleHighlight().run(),
                 isActive: () => this.isActive(),
                 group: 'text',
+                showInBubble: true,
             },
         ]
     }

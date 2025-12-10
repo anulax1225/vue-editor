@@ -5,6 +5,9 @@ export { default as FlatComponentToolbar } from './toolbars/FlatComponentToolbar
 export { default as TabToolbar } from "./toolbars/TabToolbar.vue";
 export { default as TabComponentToolbar } from './toolbars/TabComponentToolbar.vue';
 
+export { default as FlatBubbleMenu } from "./bubble-menus/FlatBubbleMenu.vue";
+export { default as ListBubbleMenu } from "./bubble-menus/ListBubbleMenu.vue";
+
 export { default as TextColorItem } from "./menu-items/TextColor.vue"
 export { default as HeadingSelectorItem } from "./menu-items/HeadingSelector.vue"
 export { default as TablePanelItem } from "./menu-items/TablePanel.vue"

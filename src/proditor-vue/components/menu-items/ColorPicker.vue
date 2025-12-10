@@ -1,5 +1,5 @@
 <template>
-    <div class="bg-gray-800 rounded shadow-lg p-3 w-64">
+    <div class="bg-gray-900 rounded shadow-lg p-3 w-64">
         <!-- Preset Colors Grid -->
         <div class="grid grid-cols-8 gap-1 mb-3">
             <button v-for="color in presetColors" :key="color" type="button" @click="selectColor(color)"

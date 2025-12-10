@@ -1,18 +1,19 @@
 <script setup>
-import { FlatToolbar, Editor, TabToolbar, TabComponentToolbar, FlatComponentToolbar, vueBase } from "@/proditor-vue"
-import { baseExtensions, base, removeExtension } from '@/proditor';
+import { Editor, FlatComponentToolbar, ListBubbleMenu, vueBase } from "@/proditor-vue"
+import { baseExtensions, base, removeExtensions } from '@/proditor';
 import { reactive } from "vue";
 
-const extensions = removeExtension([ 
+const extensions = removeExtensions([ 
     ...baseExtensions, 
     vueBase.TextColorWithComponent, 
-    vueBase.HeadingWithComponent,
     vueBase.TableWithComponent, 
-], base.nodes.Image);
+], [base.nodes.Image, base.marks.FontFamily, base.marks.FontSize, base.marks.Highlight]);
+
 const content = {
     type: "json",
     value: JSON.parse(localStorage.getItem("doc")) || null,
 }
+
 const update = ({ editor }) => {
     // console.log(editor.getContent("html"));
     // console.log(editor.getContent("json"));
@@ -21,11 +22,13 @@ const update = ({ editor }) => {
 </script>
 
 <template>
-    <div class="m-5">
+    <div class="m-5 px-10">
         <Editor 
             @update="update" 
             :extensions="extensions" 
-            :toolbar="FlatComponentToolbar" 
+            :toolbar="FlatComponentToolbar"
+            :asSidebar="false"
+            :bubbleMenu="ListBubbleMenu"
         />
     </div>
 </template>

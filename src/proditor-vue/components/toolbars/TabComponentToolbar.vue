@@ -20,7 +20,7 @@
                         <Tooltip>
                             <TooltipTrigger as-child>
                                 <component ref="componentItems" v-if="item.component" :is="item.component"
-                                    :menuItem="item" />
+                                    :menuItem="item" :editor="editor" />
                                 <Badge v-else variant="outline" @click="handleClick(item)"
                                     class="pb-1 cursor-pointer transition duration-500"
                                     :class="[item.isActive() ? 'bg-gray-800 shadow-lg' : 'hover:bg-gray-700']">

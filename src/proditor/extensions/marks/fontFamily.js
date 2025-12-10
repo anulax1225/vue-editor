@@ -42,6 +42,7 @@ export class FontFamily extends Mark {
                 action: () => this.editor.chain().setFontFamily('monospace').run(),
                 isActive: () => this.isActive(),
                 group: 'text',
+                showInBubble: true,
             },
         ]
     }

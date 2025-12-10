@@ -20,6 +20,7 @@ export class HorizontalRule extends Node {
                 action: () => this.editor.chain().setHR().run(),
                 isActive: () => false,
                 group: "blocks",
+                showInBubble: true,
             }
         ]
     }

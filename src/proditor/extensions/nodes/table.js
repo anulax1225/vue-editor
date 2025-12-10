@@ -114,7 +114,9 @@ export class Table extends Node {
             'Mod-Shift-ArrowUp': () => this.editor.chain().addRowBefore().run(),
             'Mod-Shift-ArrowRight': () => this.editor.chain().addColumnAfter().run(),
             'Mod-Shift-ArrowLeft': () => this.editor.chain().addColumnBefore().run(),
+            'Shift-Backspace': () => this.editor.chain().deleteTable().run(),
             'Mod-Shift-Backspace': () => this.editor.chain().deleteRow().run(),
+            'Mod-Backspace': () => this.editor.chain().deleteColumn().run(),
         }
     }
 

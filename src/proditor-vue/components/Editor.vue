@@ -3,13 +3,12 @@
         {{ editable ? 'Preview' : 'Edition' }}
     </button>
     <div :class="props.asSidebar ? 'flex h-full items-stretch border-t' : ''">
-        <component 
-        v-if="editor && editable" 
-        :is="props.toolbar" ref="toolbar" 
-        class="border-gray-800 pt-3" 
-        :class="props.asSidebar ? 'max-w-44 border-r border-b pr-3' : 'border-b pb-3 mb-3'"/>
-        <div class="w-full">
-            <div @focus="editor.focus('end')" ref="element" class="md-content w-full px-3 border-b"></div>
+        <component v-if="editor && editable && props.toolbar" :is="props.toolbar" ref="toolbar" class="border-gray-800 pt-3"
+            :class="props.asSidebar ? 'max-w-44 border-r border-b pr-3' : 'border-b pb-3 mb-3'" />
+        <div class="relative w-full">
+            <div @focus="editor.focus('end')" ref="editorElement" class="md-content w-full px-3 border-b">
+                <component v-if="editor && editable && props.bubbleMenu" :is="props.bubbleMenu" ref="bubbleMenu"/>
+            </div>
         </div>
     </div>
 </template>
@@ -18,13 +17,22 @@
 import { onMounted, ref, provide, shallowRef, onUnmounted } from 'vue';
 import { Editor } from "@/proditor";
 import { VueNodeAdapter } from '@/proditor-vue';
+import { BubbleMenu } from '@/proditor/extensions/plugins/bubbleMenu';
 
 const props = defineProps({
     toolbar: {
         type: Object,
         default: null
     },
+    bubbleMenu: {
+        type: Object,
+        default: null
+    },
     asSidebar: {
+        type: Boolean,
+        default: true,
+    },
+    isEditable: {
         type: Boolean,
         default: true,
     },
@@ -46,18 +54,6 @@ const props = defineProps({
 |----------------------------|--|
 | Matériaux            | Structure en métal, assise rembourrée finition en tissu|
 | Style                     |  Contemporain, Industriel |
-
-### Utilisation recommandée
-- Salle à manger
-- Cuisine
-- Lieu de restauration
-
-| Dimensions           |  |
-|------------------------------|--|
-| **Largeur**            | 45 cm |
-| **Profondeur**      | 48 cm |
-| **Hauteur totale** | 100 cm |
-| **Hauteur d'assise** | 78 cm |
             `,
         },
     },
@@ -67,11 +63,13 @@ const props = defineProps({
     },
 });
 
-const editable = ref(false);
+const editable = ref(props.isEditable);
 const toolbar = ref(null);
-const emit = defineEmits(['init', 'update'])
-const element = ref(null);
+const bubbleMenu = ref(null);
+const editorElement = ref(null);
 const editor = shallowRef(null);
+
+const emit = defineEmits(['init', 'update'])
 
 const toggleEditing = () => {
     editable.value = !editable.value;
@@ -82,8 +80,15 @@ provide('editor', editor);
 
 onMounted(() => {
     editor.value = new Editor({
-        element: element.value,
-        extensions: [...props.extensions],
+        element: editorElement.value,
+        extensions: [
+            new BubbleMenu({
+                updateCallback: (position) => {
+                    bubbleMenu.value?.updatePosition(position)
+                }
+            }),
+            ...props.extensions
+        ],
         content: props.content,
         nodeAdapter: VueNodeAdapter,
         editable: editable.value,

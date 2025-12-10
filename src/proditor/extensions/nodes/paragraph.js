@@ -14,6 +14,7 @@ export class Paragraph extends Node {
                 action: () => this.editor.chain().setParagraph().run(),
                 isActive: () => this.isActive(),
                 group: "text",
+                showInBubble: true,
             }
         ]
     }

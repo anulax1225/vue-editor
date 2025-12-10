@@ -33,6 +33,7 @@ export class Heading extends Node {
                 );
             },
             group: "text",
+            showInBubble: true,
         }))
     }
 

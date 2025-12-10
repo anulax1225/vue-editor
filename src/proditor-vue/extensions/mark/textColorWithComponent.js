@@ -25,6 +25,7 @@ export class TextColorWithComponent extends TextColor {
                 isActive: () => this.isActive(),
                 isDisabled: () => false,
                 group: 'text',
+                showInBubble: true,
             }
         ]
     }

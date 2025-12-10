@@ -42,6 +42,7 @@ export class Link extends Mark {
                 },
                 isActive: () => this.isActive(),
                 group: "text",
+                showInBubble: true,
             }
         ]
     }

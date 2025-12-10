@@ -45,20 +45,21 @@ export class Registry {
         return this.getAll().sort((a, b) => a.priority - b.priority)
     }
 
-    getMenuItems() {
+    getMenuItems(predicate) {
         const items = [];
         this.getAll()
             .filter(ext => ext.showInMenu && ext.menuItem)
-            .map(ext => items.push(...ext.menuItem))
+            .toSorted(predicate)
+            .forEach(ext => items.push(...ext.menuItem))
         return items;
     }
 
-    getBubbleMenuItems() {
-        return this.getAll()
-            .filter(ext => ext.bubbleMenu)
-            .map(ext => ({
-                name: ext.name,
-                ...ext.bubbleMenu,
-            }))
+    getBubbleMenuItems(predicate) {
+        const items = [];
+        this.getAll()
+            .filter(ext => ext.showInMenu && ext.menuItem)
+            .toSorted(predicate)
+            .forEach(ext => items.push(...ext.menuItem.filter(item => !!item?.showInBubble)));
+        return items;
     }
 }

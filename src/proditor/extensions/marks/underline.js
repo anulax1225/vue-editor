@@ -23,6 +23,7 @@ export class Underline extends Mark {
                 action: () => this.editor.chain().toggleUnderline().run(),
                 isActive: () => this.isActive(),
                 group: "text",
+                showInBubble: true,
             }
         ]
     }

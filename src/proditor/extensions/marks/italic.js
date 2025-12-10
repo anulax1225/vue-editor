@@ -21,6 +21,7 @@ export class Italic extends Mark {
                 action: () => this.editor.chain().toggleItalic().run(),
                 isActive: () => this.isActive(),
                 group: "text",
+                showInBubble: true,
             }
         ]
     }

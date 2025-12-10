@@ -24,6 +24,7 @@ export class Superscript extends Mark {
                 action: () => this.editor.chain().toggleSuperscript().run(),
                 isActive: () => this.isActive(),
                 group: "text",
+                showInBubble: true,
             }
         ]
     }

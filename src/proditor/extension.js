@@ -17,6 +17,10 @@ export class Extension {
         return this.options.priority || 100
     }
 
+    get showInMenu() {
+        return false;
+    }
+
     get schema() {
         return null
     }

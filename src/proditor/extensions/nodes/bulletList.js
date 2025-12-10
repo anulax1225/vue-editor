@@ -24,6 +24,7 @@ export class BulletList extends Node {
                 action: () => this.editor.chain().toggleBulletList().run(),
                 isActive: () => this.isActive(),
                 group: "blocks",
+                showInBubble: true,
             }
         ]
     }

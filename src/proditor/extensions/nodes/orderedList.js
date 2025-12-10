@@ -32,6 +32,7 @@ export class OrderedList extends Node {
                 action: () => this.editor.chain().toggleOrderedList().run(),
                 isActive: () => this.isActive(),
                 group: "blocks",
+                showInBubble: true,
             }
         ]
     }

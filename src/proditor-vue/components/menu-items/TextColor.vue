@@ -1,7 +1,7 @@
 <template>
-    <div class="relative inline-flex" ref="containerRef">
+    <div class="relative" ref="containerRef">
         <!-- Badge Group -->
-        <div class="flex items-center rounded overflow-hidden">
+        <div v-if="!props.isBubble" class="flex items-center rounded overflow-hidden">
             <!-- Apply Color Badge -->
             <Badge variant="outline" @click="handleToggle" :class="[
                 'pb-1 cursor-pointer transition duration-500 rounded-r-none border-r-0',
@@ -22,9 +22,16 @@
                 <ChevronDown :class="['w-3 h-3 transition duration-500', showPicker ? 'rotate-180' : '']" />
             </Badge>
         </div>
+        <div v-else class="grid grid-cols-10 items-center" @click="togglePicker">
+            <div class="col-span-2">
+                <Palette class="w-3 h-3" :style="'color:' + selectedColor"/>
+            </div>
+            <p class="col-span-7 text-xs">Font color</p>
+            <ChevronDown :class="['w-3 h-3 transition duration-500', showPicker ? 'rotate-90' : 'rotate-270']" />
+        </div>
 
         <!-- Color Picker Popover -->
-        <div v-if="showPicker" class="absolute top-full left-0 mt-2 z-50">
+        <div v-if="showPicker" class="absolute z-50" :class="props.isBubble ? 'top-0 left-full ml-2' : 'top-full left-0 mt-2'">
             <ColorPicker v-model="selectedColor" @select="handleColorSelect" />
         </div>
     </div>
@@ -37,10 +44,9 @@ import ColorPicker from './ColorPicker.vue'
 import { Palette, ChevronDown } from 'lucide-vue-next'
 
 const props = defineProps({
-    menuItem: {
-        type: Object,
-        required: true
-    }
+    menuItem: { type: Object, required: true },
+    editor: { type: Object, required: true },
+    isBubble: { type: Boolean, default: false },
 })
 
 const showPicker = ref(false)
