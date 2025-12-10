@@ -1,6 +1,6 @@
 import { MarkdownParser, MarkdownSerializer } from 'prosemirror-markdown'
 import MarkdownIt from "markdown-it"
-import { extensions } from './extensions'
+import { baseExtensions as extensions } from './extensions'
 import { tableNodes } from 'prosemirror-tables'
 import { Schema } from 'prosemirror-model'
 
@@ -409,13 +409,13 @@ function getCellContent(cell, state) {
     return content.trim()
 }
 
-export const markdownParser = createMarkdownParser(schema)
-export const markdownSerializer = createMarkdownSerializer(schema)
+// export const markdownParser = createMarkdownParser(schema)
+// export const markdownSerializer = createMarkdownSerializer(schema)
 
-export function getMarkdown(doc) {
-    return markdownSerializer.serialize(doc)
-}
+// export function getMarkdown(doc) {
+//     return markdownSerializer.serialize(doc)
+// }
 
-export function parseMarkdown(markdown) {
-    return markdownParser.parse(markdown)
-}
+// export function parseMarkdown(markdown) {
+//     return markdownParser.parse(markdown)
+// }

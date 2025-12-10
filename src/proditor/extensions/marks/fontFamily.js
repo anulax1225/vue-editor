@@ -1,6 +1,10 @@
 import { Mark } from '@/proditor/mark.js'
 
 export class FontFamily extends Mark {
+    get name() {
+        return "font_family";
+    }
+    
     get schema() {
         return {
             attrs: {

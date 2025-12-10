@@ -1,15 +1,16 @@
 <template v-if="editor">
     <div>
-        <div class="flex gap-1 items-center flex-wrap pb-1">
+        <div class="flex gap-0.5 items-center flex-wrap pb-1">
             <template v-for="(item, index) in items" :key="`${item.title}-${index}`">
                 <TooltipProvider>
                     <Tooltip>
                         <TooltipTrigger as-child>
                             <component ref="componentItems" v-if="item.component" :is="item.component"
                                 :menuItem="item" :editor="editor" />
-                            <Badge v-else variant="outline" @click="handleClick(item)"
-                                class="pb-1 cursor-pointer transition duration-500"
-                                :class="[item.isActive() ? 'bg-gray-800 shadow-lg' : 'hover:bg-gray-700']">
+                            <Badge v-else @click="handleClick(item)"
+                                variant="ghost"
+                                class="pb-1 cursor-pointer transition duration-500 bg-gray-900 px-1 py-0.5"
+                                :class="[item.isActive() ? 'bg-gray-950 shadow-lg' : 'hover:bg-gray-950']">
                                 <component v-if="iconMap[item.title.toLowerCase()]"
                                     :is="iconMap[item.title.toLowerCase()]" class="w-4 h-4" />
                                 <span v-else class="text-xs">{{ item.title }}</span>
@@ -28,15 +29,15 @@
 <script setup>
 import { computed, inject, getCurrentInstance } from 'vue'
 import { Badge } from '@/components/ui/badge'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { forceRender } from '../../utils'
 import {
     Text, Heading1, Heading2, Heading3, Bold, Italic,
     Underline, Highlighter, Strikethrough, Subscript, Superscript,
     Palette, ALargeSmall, Type, Code2, Minus, Quote, Table,
-    Plus, Trash2, Combine, Split, ListOrdered, List
-} from "lucide-vue-next"
+    Plus, Trash2, Combine, Split, ListOrdered, List,
+    Code, Link
+} from "lucide-vue-next";
 
 const instance = getCurrentInstance()
 const editor = inject('editor')
@@ -55,6 +56,8 @@ const iconMap = {
     "heading 2": Heading2,
     "heading 3": Heading3,
     "bold": Bold,
+    "code": Code,
+    "link": Link,
     "italic": Italic,
     "underline": Underline,
     "highlight": Highlighter,

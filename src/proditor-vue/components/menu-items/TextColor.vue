@@ -1,10 +1,10 @@
 <template>
     <div class="relative" ref="containerRef">
         <!-- Badge Group -->
-        <div v-if="!props.isBubble" class="flex items-center rounded overflow-hidden">
+        <div v-if="!props.isBubble" class="flex items-center gap-1 rounded overflow-hidden bg-gray-900 px-1">
             <!-- Apply Color Badge -->
             <Badge variant="outline" @click="handleToggle" :class="[
-                'pb-1 cursor-pointer transition duration-500 rounded-r-none border-r-0',
+                'pb-1 cursor-pointer transition duration-500 border-none',
                 menuItem.isActive()
                     ? 'bg-gray-800 shadow-lg'
                     : 'hover:bg-gray-700'
@@ -14,7 +14,7 @@
 
             <!-- Color Picker Toggle Badge -->
             <Badge variant="outline" @click="togglePicker" :class="[
-                'pb-1 cursor-pointer transition duration-500 rounded-l-none',
+                'pb-1 cursor-pointer transition duration-500 border-none',
                 showPicker
                     ? 'bg-gray-800 shadow-lg'
                     : 'hover:bg-gray-700'
@@ -27,7 +27,7 @@
                 <Palette class="w-3 h-3" :style="'color:' + selectedColor"/>
             </div>
             <p class="col-span-7 text-xs">Font color</p>
-            <ChevronDown :class="['w-3 h-3 transition duration-500', showPicker ? 'rotate-90' : 'rotate-270']" />
+            <ChevronDown :class="['w-3 h-3 transition duration-500', showPicker ? 'rotate-90' : 'rotate-[270deg]']" />
         </div>
 
         <!-- Color Picker Popover -->

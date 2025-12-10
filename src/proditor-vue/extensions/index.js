@@ -14,7 +14,7 @@ import { TextColorWithComponent } from "./mark/textColorWithComponent";
 import { HeadingWithComponent } from "./nodes/headingWithComponent";
 import { TableWithComponent } from "./nodes/tableWithComponent";
 
-export const base = {
+export const vueBase = {
     Image,
     TaskList,
     TaskItem,
@@ -32,7 +32,7 @@ export const base = {
     TableWithComponent,
 }
 
-export const extensions = [
+export const vueExtensions = [
     Image,
     TaskList,
     TaskItem,

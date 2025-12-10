@@ -27,6 +27,36 @@ import { BulletList } from "./nodes/bulletList.js";
 import { Code } from "./marks/code.js";
 import { Link } from "./marks/link.js";
 
+export function removeExtension(extensions, neadle) {
+    const predicate = typeof neadle === 'function' ? () => neadle : () => extensions.find(ext => (new ext()).name === neadle);
+    return extensions.toSpliced(extensions.indexOf(predicate()), 1);
+}
+
+export function removeExtensions(extensions, neadles) {
+    neadles.forEach(neadle => extensions = removeExtension(extensions, neadle))
+    return extensions;
+}
+
+export function allowExtensions(extensions, neadles) {
+    let disallowed = [];
+    extensions.forEach(ext => {
+        let extInstance = new ext();
+        let match = neadles.includes(extInstance.name);
+        if (!match) disallowed.push(extInstance.name);
+    });
+    return removeExtensions(extensions, disallowed);
+}
+
+export function replaceExtension(extensions, neadle, replacement) {
+    const predicate = typeof neadle === 'function' ? () => neadle : () => extensions.find(ext => (new ext()).name === neadle);
+    return extensions.toSpliced(extensions.indexOf(predicate()), 1, replacement);
+}
+
+export function replaceExtensions(extensions, neadleMap) {
+    Object.entries(neadleMap).forEach(([neadle, replacement]) => extensions = replaceExtension(extensions, neadle, replacement));
+    return extensions;
+}
+
 export const base = {
     nodes: {
         Doc,
@@ -62,7 +92,7 @@ export const base = {
     }
 }
 
-export const extensions = [
+export const baseExtensions = [
     Doc,
     Text,
     Paragraph,

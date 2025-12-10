@@ -4,9 +4,8 @@ import { EditorView } from 'prosemirror-view'
 import { Schema, DOMParser, DOMSerializer } from 'prosemirror-model'
 import { Registry } from './registry.js'
 import { keymap } from "prosemirror-keymap"
-import { parseMarkdown, getMarkdown } from './markdown.js'
-import { inputRules } from 'prosemirror-inputrules'
-import { Step } from 'prosemirror-transform'
+import { createMarkdownParser, createMarkdownSerializer } from './markdown.js'
+import { inputRules } from 'prosemirror-inputrules';
 
 export class Editor {
     static ContentType = Object.freeze({
@@ -21,7 +20,7 @@ export class Editor {
                     const dom = parser.parseFromString(content, 'text/html')
                     return DOMParser.fromSchema(schema).parse(dom.body)
                 case "json": return schema.nodeFromJSON(content)
-                case "markdown": return parseMarkdown(content)
+                case "markdown": return createMarkdownParser(schema).parse(content)
                 case "text": return content
             }
             return undefined
@@ -37,7 +36,7 @@ export class Editor {
                 case "json":
                     console.log();
                     return view.state.doc.toJSON()
-                case "markdown": return getMarkdown(view.state.doc)
+                case "markdown": return createMarkdownSerializer(view.state.schema).serialize(view.state.doc)
                 case "text": return view.state.doc.textContent
             }
             return undefined
@@ -193,7 +192,8 @@ export class Editor {
 
     setContent(content) {
         const { doc, tr } = this.view.state
-        const newDoc = Editor.ContentType.parse(content.type, content.value, schema)
+        const newDoc = Editor.ContentType.parse(content.type, content.value, this.view.state.schema)
+        console.log(newDoc);
         if (newDoc) {
             const transaction = tr.replaceWith(0, doc.content.size, newDoc.content)
             this.view.dispatch(transaction)

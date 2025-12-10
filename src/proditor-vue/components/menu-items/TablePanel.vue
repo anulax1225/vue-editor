@@ -1,9 +1,9 @@
 <template>
     <div class="relative" ref="containerRef">
-        <div v-if="!props.isBubble" class="flex items-center rounded overflow-hidden">
+        <div v-if="!props.isBubble" class="flex items-center gap-1 rounded overflow-hidden bg-gray-900 px-1">
             <!-- Apply Color Badge -->
-            <Badge variant="outline" @click="editor.chain().insertTable().run()" :class="[
-                'pb-1 cursor-pointer transition duration-500 rounded-r-none border-r-0',
+            <Badge variant="ghost" @click="editor.chain().insertTable().run()" :class="[
+                'pb-1 cursor-pointer transition duration-500 border-none',
                 menuItem.isActive()
                     ? 'bg-gray-800 shadow-lg'
                     : 'hover:bg-gray-700'
@@ -12,7 +12,7 @@
             </Badge>
 
             <Badge variant="outline" @click="toggleMenu" :class="[
-                'pb-1 cursor-pointer transition duration-500 rounded-l-none',
+                'pb-1 cursor-pointer transition duration-500 border-none',
                 showMenu
                     ? 'bg-gray-800 shadow-lg'
                     : 'hover:bg-gray-700'
@@ -26,7 +26,7 @@
             </div>
             <p class="col-span-7 text-xs">Table operations</p>
             <ChevronDown
-                :class="['w-3 h-3 transition duration-500', showMenu ? 'rotate-90' : 'rotate-270']" />
+                :class="['w-3 h-3 transition duration-500', showMenu ? 'rotate-90' : 'rotate-[270deg]']" />
         </div>
 
         <!-- Menu Popover -->

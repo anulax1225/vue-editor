@@ -1,8 +1,8 @@
 <template>
-    <div class=" absolute bg-gray-900 rounded-lg shadow-lg transition-[opacity_transform_top_left_right_bottom]"
+    <div class=" absolute bg-gray-900 rounded-lg shadow-lg transition-[opacity_transform]"
         :style="{
             top: (position.top + 60) + 'px',
-            left: position.left + 'px',
+            left: Math.max(position.left, 176/2) + 'px',
             transform: 'translateX(-50%)'
         }" :class="position.show ? 'opacity-100 scale-100 z-40' : 'opacity-0 scale-90 -z-20'">
         <div class="w-44">
@@ -42,7 +42,8 @@ import {
     Palette, ALargeSmall, Type, Code2, Minus, Quote, Table,
     Plus, Trash2, Combine, Split, ListOrdered, List,
     Code,
-    Proportions
+    Proportions,
+    Link
 } from "lucide-vue-next";
 
 const editor = inject('editor')
@@ -75,6 +76,7 @@ const iconMap = {
     "heading 3": Heading3,
     "bold": Bold,
     "code": Code,
+    "link": Link,
     "italic": Italic,
     "underline": Underline,
     "highlight": Highlighter,

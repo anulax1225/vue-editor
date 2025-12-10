@@ -1,6 +1,10 @@
 import { Mark } from '@/proditor/mark.js'
 
 export class FontSize extends Mark {
+    get name() {
+        return "font_size";
+    }
+
     get schema() {
         return {
             attrs: {

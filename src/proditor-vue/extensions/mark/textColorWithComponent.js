@@ -3,7 +3,7 @@ import { TextColorItem } from '@/proditor-vue/components'
 
 export class TextColorWithComponent extends TextColor {
     get name() {
-        return "textcolor";
+        return "text_color";
     }
 
     get menuItem() {

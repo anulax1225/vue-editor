@@ -1,20 +1,20 @@
 <template>
-    <button class="border rounded-lg px-2 py-1 my-2" @click="toggleEditing">
-        {{ editable ? 'Preview' : 'Edition' }}
-    </button>
-    <div :class="props.asSidebar ? 'flex h-full items-stretch border-t' : ''">
-        <component v-if="editor && editable && props.toolbar" :is="props.toolbar" ref="toolbar" class="border-gray-800 pt-3"
-            :class="props.asSidebar ? 'max-w-44 border-r border-b pr-3' : 'border-b pb-3 mb-3'" />
+    <div :class="props.asSidebar ? 'flex h-full items-stretch' : ''" class="relative">
+        <slot name="header"></slot>
+        <component v-if="editor && editable && props.toolbar" :is="props.toolbar" ref="toolbar" class="border-gray-800"
+            :class="props.asSidebar ? 'max-w-44 border-r pr-3 pt-3' : 'border-b border-gray-800 py-3 sticky top-0 left-0 right-0 bg-gray-800 z-10'" />
         <div class="relative w-full">
-            <div @focus="editor.focus('end')" ref="editorElement" class="md-content w-full px-3 border-b">
+            <div @focus="editor.focus('end')" ref="editorElement" class="w-full border-b ProseMirror">
                 <component v-if="editor && editable && props.bubbleMenu" :is="props.bubbleMenu" ref="bubbleMenu"/>
+                <slot name="content"></slot>
             </div>
         </div>
+        <slot name="footer"></slot>
     </div>
 </template>
 
 <script setup>
-import { onMounted, ref, provide, shallowRef, onUnmounted } from 'vue';
+import { onMounted, ref, provide, shallowRef, onUnmounted, toRaw } from 'vue';
 import { Editor } from "@/proditor";
 import { VueNodeAdapter } from '@/proditor-vue';
 import { BubbleMenu } from '@/proditor/extensions/plugins/bubbleMenu';
@@ -30,7 +30,7 @@ const props = defineProps({
     },
     asSidebar: {
         type: Boolean,
-        default: true,
+        default: false,
     },
     isEditable: {
         type: Boolean,
@@ -40,21 +40,7 @@ const props = defineProps({
         type: Object,
         default: {
             type: Editor.ContentType.MARKDOWN,
-            value: `
-# Informations Générales
-[google.com](https://google.com/)
-
-**Type de produit** :  Chaise de bar
-
-**Formats disponibles**  
-- \`.prefab\`
-- \`.fbx\`
-
-| Caractéristiques |  |
-|----------------------------|--|
-| Matériaux            | Structure en métal, assise rembourrée finition en tissu|
-| Style                     |  Contemporain, Industriel |
-            `,
+            value: ``,
         },
     },
     extensions: {
@@ -62,7 +48,6 @@ const props = defineProps({
         default: [],
     },
 });
-
 const editable = ref(props.isEditable);
 const toolbar = ref(null);
 const bubbleMenu = ref(null);
@@ -71,13 +56,7 @@ const editor = shallowRef(null);
 
 const emit = defineEmits(['init', 'update'])
 
-const toggleEditing = () => {
-    editable.value = !editable.value;
-    editor.value.setEditable(editable.value);
-}
-
 provide('editor', editor);
-
 onMounted(() => {
     editor.value = new Editor({
         element: editorElement.value,
@@ -95,9 +74,9 @@ onMounted(() => {
     });
     editor.value.on("update", e => emit("update", e))
     editor.value.on("transaction", ({ editor }) => {
-        if (editor.isEditable) toolbar.value.forceRerender();
+        if (editor.isEditable) toolbar.value?.forceRerender();
     });
-    emit("init", editor)
+    emit("init", toRaw(editor.value));
 })
 
 onUnmounted(() => {

@@ -2,6 +2,10 @@ import { Mark } from '@/proditor/mark.js'
 import { toggleMark } from 'prosemirror-commands'
 
 export class TextColor extends Mark {
+    get name() {
+        return "text_color";
+    }
+
     get schema() {
         return {
             attrs: {

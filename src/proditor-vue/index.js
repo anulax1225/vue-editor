@@ -1,10 +1,10 @@
 import { VueNodeAdapter } from "./nodeAdapter.js";
-import { extensions, base } from "./extensions/index.js";
+//import { vueExtensions, vueBase } from "./extensions/index.js";
 
 export {
     VueNodeAdapter,
-    extensions as vueExtensions,
-    base as vueBase,
+    // vueExtensions,
+    // vueBase,
 }
 
 export * from "./components"
